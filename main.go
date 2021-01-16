@@ -12,6 +12,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "<h1>Welcome the the picapp site</h1>")
 	} else if r.URL.Path == "/contact" {
 	fmt.Fprint(w, "<a>Contact me: <a href=\"mailto:adamwoolhether@gmail.com\">adamwoolhether@gmail.com</a></h1>")
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprint(w, "<h1>This page doesn't exist :o</h1><p>Email me if you keep getting this message.</p>")
 	}
 }
 
