@@ -21,4 +21,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	http.HandleFunc("/", handler)
 	http.ListenAndServe("localhost:3000", nil)
+
+	// Under the hood, this uses ServeMux router:
+	/*	mgit ux := &http.ServeMux{}
+		mux.HandleFunc("/", handler)
+		http.ListenAndServe("localhost:3000", mux)*/
 }
