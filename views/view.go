@@ -7,7 +7,7 @@ import "html/template"
 // The templatized files will be appended to the parameterized 'files' list.
 func NewView(files ...string) *View {
 	files = append(files, "views/layouts/footer.gohtml")
-	
+
 	t, err := template.ParseFiles(files...)
 	if err != nil {
 		panic(err)
