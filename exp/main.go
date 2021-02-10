@@ -24,24 +24,13 @@ func main() {
 	}
 	defer db.Close()
 
-	//// Check connection to db
-	//err = db.Ping()
-	//if err != nil {
-	//	panic(err)
-	//}
+	type User struct {
+		ID int
+		name string
+		email string
+	}
 
-	/*	var id int
-		err = db.QueryRow(`
-		INSERT INTO users(name, email)
-		VALUES($1, $2)
-		RETURNING id`, "Joe Wade", "joe@gmail.com").Scan(&id)
-		if err != nil {
-			panic(err)
-		}*/
-
-	// If you don't want to chain the command, run the above code block as follows
-	var id int
-	var name, email string
+	var users []User
 	rows, err := db.Query(`
 		SELECT id, name, email
 		FROM users`)
@@ -49,12 +38,18 @@ func main() {
 		panic(err)
 	}
 	defer rows.Close()
-
 	for rows.Next() {
-		err = rows.Scan(&id, &name, &email)
+		var user User
+		err = rows.Scan(&user.ID, &user.name, &user.email)
 		if err != nil {
 			panic(err)
 		}
-	fmt.Println("id: ", id, "name: ", name, "email: ", email)
+
+		users = append(users, user)
 	}
+
+	if rows.Err() != nil {
+		fmt.Println("Row err: ", err)
+	}
+	fmt.Println(users)
 }
