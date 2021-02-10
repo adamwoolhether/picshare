@@ -1,10 +1,9 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
-
-	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 const (
@@ -14,33 +13,20 @@ const (
 	dbname = "picapp"
 )
 
+type User struct {
+	gorm.Model
+	Name  string
+	Email string `gorm:"not null;uniqueIndex"`
+}
+
 func main() {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable",
 		host, port, user, dbname)
 	// Verify driver name and datasource name are working correctly
-	db, err := sql.Open("postgres", psqlInfo)
+	db, err := gorm.Open(postgres.Open(psqlInfo), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
-	defer db.Close()
-
-	rows, err := db.Query(`
-		SELECT * FROM users
-		INNER JOIN orders ON users.id=orders.user_id`)
-	if err != nil {
-		panic(err)
-	}
-
-	var userID, orderID, amount int
-	var name, email, description string
-	for rows.Next() {
-		if err := rows.Scan(&userID, &name, &email, &orderID, &userID, &amount, &description); err != nil {
-			panic(err)
-		}
-		fmt.Println("userID: ", userID, "name: ", name, "email: ", email,
-			"orderID: ", orderID, "amount: ", amount, "description: ", description)
-	}
-	if rows.Err() != nil {
-		panic(err)
-	}
+	//db.Migrator().DropTable(&User{})
+	//db.AutoMigrate(&User{})
 }
