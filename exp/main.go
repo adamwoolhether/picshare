@@ -30,25 +30,30 @@ func main() {
 	//	panic(err)
 	//}
 
-	var id int
+/*	var id int
 	err = db.QueryRow(`
 	INSERT INTO users(name, email)
 	VALUES($1, $2)
 	RETURNING id`, "Joe Wade", "joe@gmail.com").Scan(&id)
 	if err != nil {
 		panic(err)
-	}
-/*
+	}*/
+
 	// If you don't want to chain the command, run the above code block as follows
 	var id int
+	var name, email string
 	row := db.QueryRow(`
-		INSERT INTO users(name, email)
-		VALUES($1, $2)
-		RETURNING id`, "Mike", "Mike@gmail.com")
-	err = row.Scan(&id)
+		SELECT id, name, email
+		FROM users
+		WHERE id=$1`, 6)
+	err = row.Scan(&id, &name, &email)
 	if err != nil {
-		panic(err)
+		if err == sql.ErrNoRows {
+			fmt.Println("No rows with given id")
+		} else {
+			panic(err)
+		}
 	}
-*/
-	fmt.Println("id is: ", id)
+
+	fmt.Println("id: ", id, "name: ", name, "email: ", email)
 }
