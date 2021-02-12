@@ -3,9 +3,8 @@ package models
 import (
 	"errors"
 	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 	_ "gorm.io/driver/postgres"
-	"gorm.io/gorm/logger"
+	"gorm.io/gorm"
 )
 
 var (
@@ -15,7 +14,7 @@ var (
 
 func NewUserService(connectionInfo string) (*UserService, error) {
 	db, err := gorm.Open(postgres.Open(connectionInfo), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		//Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
 		return nil, err
@@ -43,6 +42,11 @@ func (us *UserService) ByID(id uint) (*User, error) {
 	default:
 		return nil, err
 	}
+}
+
+// Create creates the provided user and backfill data(ID, CreatedAt, UpdatedAt) fields.
+func(us *UserService) Create(user *User) error {
+	return us.db.Create(user).Error
 }
 
 /*// Closing the DB ***not sure about this method***
