@@ -1,13 +1,10 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"os"
-	"strings"
 )
 
 const (
@@ -37,30 +34,30 @@ func main() {
 	//db.Migrator().DropTable(&User{})
 	db.AutoMigrate(&User{})
 
-	name, email, color := getInfo()
-	u := User {
-		Name: name,
-		Email: email,
-		Color: color,
+	var u User
+	/*//newDB := db.Where("id = ? AND color = ?", 7, "green") //GORM uses a '?' as an arg placeholder instead of $1
+	//newDB.First(&u)*/
+
+/*	// Another way to chain queries:
+ 	db.Where("color = ?", "green").
+		Where("id > ?", 3).
+		First(&u)*/
+
+/*	// Or you can alter the user object:
+	var u User = User{
+		Color: "green",
+		Email: "jane@jane.com",
 	}
+	db.Where(&u).First(&u)*/
 
-	if err = db.Create(&u).Error; err != nil {
-		panic(err)
-	}
-	fmt.Printf("%+v\n", u)
-}
+/*	// Using Find example:
+	var users []User
+	db.Find(&users)
+	fmt.Println(len(users))
+	fmt.Println(users)*/
 
-func getInfo() (name, email, color string) {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("What's your name?")
-	name, _ = reader.ReadString('\n')
-	fmt.Println("What's your email?")
-	email, _ = reader.ReadString('\n')
-	fmt.Println("What's your favorite color?")
-	color, _ = reader.ReadString('\n')
-	name = strings.TrimSpace(name)
-	email = strings.TrimSpace(email)
-	color = strings.TrimSpace(color)
 
-	return name, email, color
+	db.First(&u)
+	fmt.Println(u)
+
 }
