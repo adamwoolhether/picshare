@@ -35,29 +35,32 @@ func main() {
 	db.AutoMigrate(&User{})
 
 	var u User
-	/*//newDB := db.Where("id = ? AND color = ?", 7, "green") //GORM uses a '?' as an arg placeholder instead of $1
-	//newDB.First(&u)*/
 
-/*	// Another way to chain queries:
- 	db.Where("color = ?", "green").
-		Where("id > ?", 3).
-		First(&u)*/
+/*	// Method 1
+	newDB := db.Where("email = ?", "blah@blah.com").First(&u)
+	if newDB.Error != nil {
+		panic(newDB.Error)
+	}*/
 
-/*	// Or you can alter the user object:
-	var u User = User{
-		Color: "green",
-		Email: "jane@jane.com",
+/*	// Method 2
+	db = db.Where("name = ?", "frank").First(&u)
+	errors := db.Error
+	if db.Error != nil {
+		fmt.Println(errors)
+	}*/
+
+	// Method 3
+	if err := db.Where("name = ?", "frank").First(&u).Error; err != nil {
+		switch err {
+		case gorm.ErrRecordNotFound:
+			fmt.Println("Record is not found")
+		default:
+			panic(err)
+		}
 	}
-	db.Where(&u).First(&u)*/
-
-/*	// Using Find example:
-	var users []User
-	db.Find(&users)
-	fmt.Println(len(users))
-	fmt.Println(users)*/
 
 
-	db.First(&u)
+	//db.First(&u)
 	fmt.Println(u)
 
 }
