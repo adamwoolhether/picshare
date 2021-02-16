@@ -1,21 +1,23 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
+	"picapp/models"
 	"picapp/views"
 )
 
 // NewUsers creates a new Users controller. To be used during initial setup.
 // If templates are incorrectly parsed, a panic will occur.
-func NewUsers() *Users {
+func NewUsers(us *models.UserService) *Users {
 	return &Users{
 		NewView: views.NewView("bootstrap", "users/new"),
+		us: us,
 	}
 }
 
 type Users struct {
 	NewView *views.View
+	us *models.UserService
 }
 
 // New renders the form allowing users to create a new account
@@ -27,6 +29,7 @@ func (u *Users) New(w http.ResponseWriter, r *http.Request) {
 }
 
 type SignupForm struct {
+	Name 	string	`scheme:"name"`
 	Email    string `schema:"email"`
 	Password string `schema:"password"`
 }
@@ -38,6 +41,13 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	if err := parseForm(r, &form); err != nil {
 		panic(err)
 	}
-	
-	fmt.Fprintln(w, form)
+	user := models.User{
+		Name: form.Name,
+		Email: form.Email,
+
+	}
+	err := u.us.Create(&user); if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }

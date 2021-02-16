@@ -87,13 +87,23 @@ func (us *UserService) Close() error {
 }*/
 
 // DestructiveReset drops the user table and rebuilds it.
-func (us *UserService) DestructiveReset() {
-	us.db.Migrator().DropTable(&User{})
-	us.db.AutoMigrate(&User{})
+func (us *UserService) DestructiveReset() error {
+	if err := us.db.Migrator().DropTable(&User{}); err != nil {
+		return err
+	}
+	return us.db.AutoMigrate()
+}
+
+// AutoMigrate attempts to automatically migrate the users table.
+func (us *UserService) AutoMigrate() error {
+	if err := us.db.AutoMigrate(&User{}); err != nil {
+		return err
+	}
+	return nil
 }
 
 type User struct {
 	gorm.Model
 	Name  string
-	Email string `gorm:"not null;unique_index"`
+	Email string `gorm:"not null;uniqueIndex"`
 }

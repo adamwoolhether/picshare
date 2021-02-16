@@ -19,11 +19,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	us.DestructiveReset()
+	//us.DestructiveReset()
 
 	user := models.User{
-		Name: "Jon Smith",
-		Email: "jsmith@mystery.com",
+		Name: "nikki liao",
+		Email: "nikki@cat.com",
 	}
 	if err := us.Create(&user); err != nil {
 		panic(err)
