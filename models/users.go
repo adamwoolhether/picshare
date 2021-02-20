@@ -6,6 +6,7 @@ import (
 	_ "gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var (
@@ -64,6 +65,12 @@ func (us *UserService) ByEmail(email string) (*User, error) {
 
 // Create creates the provided user and backfill data(ID, CreatedAt, UpdatedAt) fields.
 func (us *UserService) Create(user *User) error {
+	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	user.PasswordHash = string(hashedBytes)
+	user.Password = ""	// Clears the user-entered pw for log-exclusion
 	return us.db.Create(user).Error
 }
 
@@ -106,4 +113,6 @@ type User struct {
 	gorm.Model
 	Name  string
 	Email string `gorm:"not null;uniqueIndex"`
+	Password string `gorm:"-"`
+	PasswordHash string `gorm:"not null"`	//Migrating existing DB won't work, due to 'not null' tag.
 }

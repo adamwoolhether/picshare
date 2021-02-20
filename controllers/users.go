@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"picapp/models"
 	"picapp/views"
@@ -44,10 +45,12 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	user := models.User{
 		Name: form.Name,
 		Email: form.Email,
+		Password: form.Password,
 
 	}
 	err := u.us.Create(&user); if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	fmt.Fprintln(w, user)
 }
