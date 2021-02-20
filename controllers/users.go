@@ -69,6 +69,15 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 	if err := parseForm(r, &form); err != nil {
 		panic(err) // Implement better error handling for user
 	}
-	// Do something
-	fmt.Fprintln(w, form)
+	user, err := u.us.Authenticate(form.Email, form.Password)
+	switch err {
+	case models.ErrNotFound:
+		fmt.Fprintln(w, "Invalid email address.")
+	case models.ErrInvalidPW:
+		fmt.Fprintln(w, "Invalid password.")
+	case nil:
+		fmt.Fprintln(w, user)
+	default:
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }

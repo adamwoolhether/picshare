@@ -2,11 +2,11 @@ package models
 
 import (
 	"errors"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/postgres"
 	_ "gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"golang.org/x/crypto/bcrypt"
 )
 
 var (
@@ -15,6 +15,9 @@ var (
 
 	// ErrInvalidID is returned when an invalid ID is provided to an verb method.
 	ErrInvalidID = errors.New("models: Provided ID is invalid")
+
+	// ERrInvalidPW is returned when an invalid password is used in an authentication attempt.
+	ErrInvalidPW = errors.New("models: Provided password is invalid")
 )
 
 const userPwPepper = "+&_|U;_?=r]}~7NZTVf>|^eG>QwL{!^eYkX=TN.4C\".3D$fXo`"
@@ -65,6 +68,26 @@ func (us *UserService) ByEmail(email string) (*User, error) {
 	return &user, err
 }
 
+// Authenticate will authenticate a user with the provided email & password
+func (us *UserService) Authenticate(email, password string) (*User, error) {
+	foundUser, err := us.ByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(foundUser.PasswordHash), []byte(password+userPwPepper))
+	if err != nil {
+		switch err {
+		case bcrypt.ErrMismatchedHashAndPassword:
+			return nil, ErrInvalidPW
+		default:
+			return nil, err
+		}
+	}
+
+	return foundUser, nil
+}
+
 // Create creates the provided user and backfill data(ID, CreatedAt, UpdatedAt) fields.
 func (us *UserService) Create(user *User) error {
 	pwBytes := []byte(user.Password + userPwPepper)
@@ -73,7 +96,7 @@ func (us *UserService) Create(user *User) error {
 		return err
 	}
 	user.PasswordHash = string(hashedBytes)
-	user.Password = ""	// Clears the user-entered pw for log-exclusion
+	user.Password = "" // Clears the user-entered pw for log-exclusion
 	return us.db.Create(user).Error
 }
 
@@ -83,7 +106,7 @@ func (us *UserService) Update(user *User) error {
 }
 
 // Delete will delete the user associated with the provided ID.
-func(us *UserService) Delete(id uint) error {
+func (us *UserService) Delete(id uint) error {
 	if id == 0 {
 		return ErrInvalidID
 	}
@@ -114,8 +137,8 @@ func (us *UserService) AutoMigrate() error {
 
 type User struct {
 	gorm.Model
-	Name  string
-	Email string `gorm:"not null;uniqueIndex"`
-	Password string `gorm:"-"`
-	PasswordHash string `gorm:"not null"`	//Migrating existing DB won't work, due to 'not null' tag.
+	Name         string
+	Email        string `gorm:"not null;uniqueIndex"`
+	Password     string `gorm:"-"`
+	PasswordHash string `gorm:"not null"` //Migrating existing DB won't work, due to 'not null' tag.
 }
