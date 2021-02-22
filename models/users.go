@@ -7,6 +7,8 @@ import (
 	_ "gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"picapp/hash"
+	"picapp/rand"
 )
 
 var (
@@ -21,6 +23,7 @@ var (
 )
 
 const userPwPepper = "+&_|U;_?=r]}~7NZTVf>|^eG>QwL{!^eYkX=TN.4C\".3D$fXo`"
+const hmacSecretKey = "secret-hmac-key"
 
 func NewUserService(connectionInfo string) (*UserService, error) {
 	db, err := gorm.Open(postgres.Open(connectionInfo), &gorm.Config{
@@ -29,13 +32,16 @@ func NewUserService(connectionInfo string) (*UserService, error) {
 	if err != nil {
 		return nil, err
 	}
+	hmac := hash.NewHMAC(hmacSecretKey)
 	return &UserService{
-		db: db,
+		db:   db,
+		hmac: hmac,
 	}, nil
 }
 
 type UserService struct {
-	db *gorm.DB
+	db   *gorm.DB
+	hmac hash.HMAC
 }
 
 // first queries the provided *gorm.DB, gets the first item returned and places it in dst.
@@ -68,6 +74,18 @@ func (us *UserService) ByEmail(email string) (*User, error) {
 	return &user, err
 }
 
+// ByRemember looks up a user by the given RememberToken and returns that user.
+// It handles hashing the token for us. Errors same as ByEmail
+func (us *UserService) ByRemember(token string) (*User, error) {
+	var user User
+	rememberHash := us.hmac.Hash(token)
+	err := first(us.db.Where("remember_hash = ?", rememberHash), &user)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
 // Authenticate will authenticate a user with the provided email & password
 func (us *UserService) Authenticate(email, password string) (*User, error) {
 	foundUser, err := us.ByEmail(email)
@@ -97,11 +115,23 @@ func (us *UserService) Create(user *User) error {
 	}
 	user.PasswordHash = string(hashedBytes)
 	user.Password = "" // Clears the user-entered pw for log-exclusion
+
+	if user.Remember == "" {
+		token, err := rand.RememberToken()
+		if err != nil {
+			return err
+		}
+		user.Remember = token
+	}
+	user.RememberHash = us.hmac.Hash(user.Remember)
 	return us.db.Create(user).Error
 }
 
 // Update updates the provided user with all data in the given User object.
 func (us *UserService) Update(user *User) error {
+	if user.Remember != "" {
+		user.Remember = us.hmac.Hash(user.Remember)
+	}
 	return us.db.Save(user).Error
 }
 
@@ -141,4 +171,6 @@ type User struct {
 	Email        string `gorm:"not null;uniqueIndex"`
 	Password     string `gorm:"-"`
 	PasswordHash string `gorm:"not null"` //Migrating existing DB won't work, due to 'not null' tag.
+	Remember     string `gorm:"-"`
+	RememberHash string `gorm:"not null;uniqueIndex"`
 }

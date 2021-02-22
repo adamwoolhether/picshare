@@ -1,22 +1,40 @@
 package main
 
 import (
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/base64"
 	"fmt"
+	"picapp/models"
+)
 
-	"picapp/hash"
+const (
+	host   = "localhost"
+	port   = 5432
+	user   = "adam"
+	dbname = "picapp"
 )
 
 func main() {
-	toHash := []byte("this is my string to hash")
-	h := hmac.New(sha256.New, []byte("my-secret-key"))
-	h.Write(toHash)
-	b := h.Sum(nil)
-	fmt.Println(base64.URLEncoding.EncodeToString(b))
-	//h.Reset()
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable",
+		host, port, user, dbname)
+	us, err := models.NewUserService(psqlInfo)
+	if err != nil {
+		panic(err)
+	}
+	us.DestructiveReset()
+	us.AutoMigrate()
+	user := models.User{
+		Name:     "adam",
+		Email:    "adam@wade.com",
+		Password: "adam",
+		Remember: "abc123",
+	}
+	err = us.Create(&user); if err != nil {
+		panic(err)
+	}
+	fmt.Printf("%+v\n", user)
 
-	hmac := hash.NewHMAC("my-secret-key")
-	fmt.Println(hmac.Hash("this is my string to hash"))
+	user2, err := us.ByRemember("abc123")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("%+v\n", *user2)
 }
