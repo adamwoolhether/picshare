@@ -1,40 +1,44 @@
 package main
 
-import (
-	"fmt"
-	"picapp/models"
-)
+import "fmt"
 
-const (
-	host   = "localhost"
-	port   = 5432
-	user   = "adam"
-	dbname = "picapp"
-)
+type Cat struct {}
+
+func (c Cat) Speak() {
+	fmt.Println("meow ")
+}
+
+type Dog struct{}
+
+func (d Dog) Speak() {
+	fmt.Println("woof")
+}
+
+type Husky struct {
+	// To use embedding, we replace the name with JUST the type.
+	// instead of `dog Dog` we just use `Dog`
+	//Dog
+	Speaker
+}
+
+type SpeakerPrefix struct {
+	Speaker
+}
+
+func (sp SpeakerPrefix) Speak() {
+	fmt.Print("Prefix: ")
+	sp.Speaker.Speak()
+}
+
+type Speaker interface {
+	Speak()
+}
 
 func main() {
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable",
-		host, port, user, dbname)
-	us, err := models.NewUserService(psqlInfo)
-	if err != nil {
-		panic(err)
-	}
-	us.DestructiveReset()
-	us.AutoMigrate()
-	user := models.User{
-		Name:     "adam",
-		Email:    "adam@wade.com",
-		Password: "adam",
-		Remember: "abc123",
-	}
-	err = us.Create(&user); if err != nil {
-		panic(err)
-	}
-	fmt.Printf("%+v\n", user)
-
-	user2, err := us.ByRemember("abc123")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("%+v\n", *user2)
+	h := Husky{Dog{}}
+	h.Speak() // equal to h.Dog.Speak()
+	h = Husky{Cat{}}
+	h.Speak() // equal to h.Dog.Speak()
+	h = Husky{SpeakerPrefix{Cat{}}}
+	h.Speak()
 }
