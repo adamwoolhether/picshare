@@ -10,7 +10,7 @@ import (
 
 // NewUsers creates a new Users controller. To be used during initial setup.
 // If templates are incorrectly parsed, a panic will occur.
-func NewUsers(us *models.UserService) *Users {
+func NewUsers(us models.UserService) *Users {
 	return &Users{
 		NewView:   views.NewView("bootstrap", "users/new"),
 		LoginView: views.NewView("bootstrap", "users/login"),
@@ -21,7 +21,7 @@ func NewUsers(us *models.UserService) *Users {
 type Users struct {
 	NewView   *views.View
 	LoginView *views.View
-	us        *models.UserService
+	us        models.UserService
 }
 
 //// New renders the form allowing users to create a new account
