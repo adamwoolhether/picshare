@@ -95,7 +95,7 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/cookietest", http.StatusFound)
 }
 
-// signIn signs in a given user and sets cookies
+// signIn signs in a given user after account creation and sets cookies
 func (u *Users) signIn(w http.ResponseWriter, user *models.User) error {
 	if user.Remember == "" {
 		token, err := rand.RememberToken(); if err != nil {
@@ -109,6 +109,7 @@ func (u *Users) signIn(w http.ResponseWriter, user *models.User) error {
 	cookie := http.Cookie{
 		Name:  "remember_token",
 		Value: user.Remember,
+		HttpOnly: true,
 	}
 	http.SetCookie(w, &cookie) // Must write cookie to http.ResponseWriter before writing with Fprint
 	return nil
