@@ -121,6 +121,14 @@ func runUserValFuncs(user *User, fns ...userValFunc) error {
 	return nil
 }
 
+func (uv *userValidator) hmacRemember(user *User) error {
+	if user.Remember == "" {
+		return nil
+	}
+	user.RememberHash = uv.hmac.Hash(user.Remember)
+	return nil
+}
+
 var _ UserDB = &userValidator{}
 
 type userValidator struct {
@@ -130,16 +138,17 @@ type userValidator struct {
 
 // ByRemember hashes the remember token an call ByRemember on the subsequent UserDB layer.
 func (uv *userValidator) ByRemember(token string) (*User, error) {
-	rememberHash := uv.hmac.Hash(token)
-	return uv.UserDB.ByRemember(rememberHash)
+	user := User{
+		Remember: token,
+	}
+	if err := runUserValFuncs(&user, uv.hmacRemember); err != nil {
+		return nil, err
+	}
+	return uv.UserDB.ByRemember(user.RememberHash)
 }
 
 // Create creates the provided user and backfill data(ID, CreatedAt, UpdatedAt) fields.
 func (uv *userValidator) Create(user *User) error {
-	if err := runUserValFuncs(user, uv.bcryptPassword); err != nil {
-		return err
-	}
-
 	if user.Remember == "" {
 		token, err := rand.RememberToken()
 		if err != nil {
@@ -147,17 +156,16 @@ func (uv *userValidator) Create(user *User) error {
 		}
 		user.Remember = token
 	}
-	user.RememberHash = uv.hmac.Hash(user.Remember)
+	if err := runUserValFuncs(user, uv.bcryptPassword, uv.hmacRemember); err != nil {
+		return err
+	}
 	return uv.UserDB.Create(user)
 }
 
 // Update hashes a remember token if provided.
 func (uv *userValidator) Update(user *User) error {
-	if err := runUserValFuncs(user, uv.bcryptPassword); err != nil {
+	if err := runUserValFuncs(user, uv.bcryptPassword, uv.hmacRemember); err != nil {
 		return err
-	}
-	if user.Remember != "" {
-		user.RememberHash = uv.hmac.Hash(user.Remember)
 	}
 	return uv.UserDB.Update(user)
 }
