@@ -36,7 +36,6 @@ type User struct {
 	RememberHash string `gorm:"not null;uniqueIndex"`
 }
 
-
 // UserDB is used to interact with the users database.
 // For nearly all single user queries:
 // If user is found, return user, nil. If user isn't found, return nil, ErrNotFound
@@ -91,12 +90,13 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 }
 
 func NewUserService(connectionInfo string) (UserService, error) {
-	ug, err := newUserGorm(connectionInfo); if err != nil {
+	ug, err := newUserGorm(connectionInfo)
+	if err != nil {
 		return nil, err
 	}
 	hmac := hash.NewHMAC(hmacSecretKey)
 	uv := &userValidator{
-		hmac: hmac,
+		hmac:   hmac,
 		UserDB: ug,
 	}
 	return &userService{
@@ -165,8 +165,13 @@ func (uv *userValidator) Update(user *User) error {
 
 // Delete will delete the user associated with the provided ID.
 func (uv *userValidator) Delete(id uint) error {
-	if id == 0 {
-		return ErrInvalidID
+	user := User{
+		Model: gorm.Model{
+			ID: id,
+		},
+	}
+	if err := runUserValFuncs(&user, uv.idGreaterThan(0)); err != nil {
+		return err
 	}
 	return uv.UserDB.Delete(id)
 }
@@ -188,15 +193,24 @@ func (uv *userValidator) bcryptPassword(user *User) error {
 }
 
 func (us *userValidator) defaultRemember(user *User) error {
-	if user.Remember != ""{
+	if user.Remember != "" {
 		return nil
 	}
-		token, err := rand.RememberToken()
-		if err != nil {
-			return err
+	token, err := rand.RememberToken()
+	if err != nil {
+		return err
+	}
+	user.Remember = token
+	return nil
+}
+
+func (uv *userValidator) idGreaterThan(n uint) userValFunc {
+	return userValFunc(func(user *User) error {
+		if user.ID <= n {
+			return ErrInvalidID
 		}
-		user.Remember = token
 		return nil
+	})
 }
 
 var _ UserDB = &userGorm{}
@@ -209,12 +223,12 @@ func newUserGorm(connectionInfo string) (*userGorm, error) {
 		return nil, err
 	}
 	return &userGorm{
-		db:   db,
+		db: db,
 	}, nil
 }
 
 type userGorm struct {
-	db   *gorm.DB
+	db *gorm.DB
 }
 
 // ByID looks up a user based on given ID.
