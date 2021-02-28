@@ -9,17 +9,28 @@ import (
 	"gorm.io/gorm/logger"
 	"picapp/hash"
 	"picapp/rand"
+	"regexp"
+	"strings"
 )
 
 var (
-	// ErrNotFound is returned when a resource isn't found in the database.
+	// ErrNotFound is returned when a resource isn't found in the database
 	ErrNotFound = errors.New("models: resource not found")
 
-	// ErrInvalidID is returned when an invalid ID is provided to an verb method.
+	// ErrInvalidID is returned when an invalid ID is provided to an verb method
 	ErrInvalidID = errors.New("models: Provided ID is invalid")
 
-	// ERrInvalidPW is returned when an invalid password is used in an authentication attempt.
+	// ErrInvalidPW is returned when an invalid password is used in an authentication attempt
 	ErrInvalidPW = errors.New("models: Provided password is invalid")
+
+	// ErrEmailRequired is returned when an email address it not provided at user creation
+	ErrEmailRequired = errors.New("models: Email address is required")
+
+	// ErrEmailInvalid is returned when a proivded email address doesn't match our requirements
+	ErrEmailInvalid = errors.New("models: Email address is not valid")
+
+	// ErrEmailTaken is returned when an update or create is attampted on an already in-use Email address
+	ErrEmailTaken = errors.New("models: Email address is already taken")
 )
 
 const userPwPepper = "+&_|U;_?=r]}~7NZTVf>|^eG>QwL{!^eYkX=TN.4C\".3D$fXo`"
@@ -69,6 +80,12 @@ type UserService interface {
 	UserDB
 }
 
+var _ UserService = &userService{}
+
+type userService struct {
+	UserDB
+}
+
 // Authenticate will authenticate a user with the provided email & password
 func (us *userService) Authenticate(email, password string) (*User, error) {
 	foundUser, err := us.ByEmail(email)
@@ -95,19 +112,10 @@ func NewUserService(connectionInfo string) (UserService, error) {
 		return nil, err
 	}
 	hmac := hash.NewHMAC(hmacSecretKey)
-	uv := &userValidator{
-		hmac:   hmac,
-		UserDB: ug,
-	}
+	uv := newUserValidator(ug, hmac)
 	return &userService{
 		UserDB: uv,
 	}, nil
-}
-
-var _ UserService = &userService{}
-
-type userService struct {
-	UserDB
 }
 
 type userValFunc func(*User) error
@@ -131,9 +139,30 @@ func (uv *userValidator) hmacRemember(user *User) error {
 
 var _ UserDB = &userValidator{}
 
+func newUserValidator(udb UserDB, hmac hash.HMAC) *userValidator {
+	return &userValidator{
+		UserDB:     udb,
+		hmac:       hmac,
+		emailRegex: regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,16}$`),
+	}
+}
+
 type userValidator struct {
 	UserDB
-	hmac hash.HMAC
+	hmac       hash.HMAC
+	emailRegex *regexp.Regexp
+}
+
+// ByEmail normalizes the email address before calling ByEmail
+// on the UserDB field.
+func (uv *userValidator) ByEmail(email string) (*User, error) {
+	user := User{
+		Email: email,
+	}
+	if err := runUserValFuncs(&user, uv.normalizeEmail); err != nil {
+		return nil, err
+	}
+	return uv.UserDB.ByEmail(user.Email)
 }
 
 // ByRemember hashes the remember token an call ByRemember on the subsequent UserDB layer.
@@ -149,7 +178,14 @@ func (uv *userValidator) ByRemember(token string) (*User, error) {
 
 // Create creates the provided user and backfill data(ID, CreatedAt, UpdatedAt) fields.
 func (uv *userValidator) Create(user *User) error {
-	if err := runUserValFuncs(user, uv.bcryptPassword, uv.defaultRemember, uv.hmacRemember); err != nil {
+	if err := runUserValFuncs(user,
+		uv.bcryptPassword,
+		uv.defaultRemember,
+		uv.hmacRemember,
+		uv.normalizeEmail,
+		uv.requireEmail,
+		uv.emailFormat,
+		uv.emailIsAvail); err != nil {
 		return err
 	}
 	return uv.UserDB.Create(user)
@@ -157,7 +193,13 @@ func (uv *userValidator) Create(user *User) error {
 
 // Update hashes a remember token if provided.
 func (uv *userValidator) Update(user *User) error {
-	if err := runUserValFuncs(user, uv.bcryptPassword, uv.hmacRemember); err != nil {
+	if err := runUserValFuncs(user,
+		uv.bcryptPassword,
+		uv.hmacRemember,
+		uv.normalizeEmail,
+		uv.requireEmail,
+		uv.emailFormat,
+		uv.emailIsAvail); err != nil {
 		return err
 	}
 	return uv.UserDB.Update(user)
@@ -211,6 +253,46 @@ func (uv *userValidator) idGreaterThan(n uint) userValFunc {
 		}
 		return nil
 	})
+}
+
+func (uv *userValidator) normalizeEmail(user *User) error {
+	user.Email = strings.ToLower(user.Email)
+	user.Email = strings.TrimSpace(user.Email)
+	return nil
+}
+
+func (uv *userValidator) requireEmail(user *User) error {
+	if user.Email == "" {
+		return ErrEmailRequired
+	}
+	return nil
+}
+
+func (uv *userValidator) emailFormat(user *User) error {
+	if user.Email == "" {
+		return nil
+	}
+	if !uv.emailRegex.MatchString(user.Email) {
+		return ErrEmailInvalid
+	}
+	return nil
+}
+
+func (uv *userValidator) emailIsAvail(user *User) error {
+	existing, err := uv.ByEmail(user.Email)
+	if err == ErrNotFound {
+		// Email address is not taken
+		return nil
+	}
+	if err != nil {
+		return nil
+	}
+	// User with this email is found.
+	// If found user has same email as this user, it's an update
+	if user.ID != existing.ID {
+		return ErrEmailTaken
+	}
+	return nil
 }
 
 var _ UserDB = &userGorm{}
