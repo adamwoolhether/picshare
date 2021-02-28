@@ -149,14 +149,7 @@ func (uv *userValidator) ByRemember(token string) (*User, error) {
 
 // Create creates the provided user and backfill data(ID, CreatedAt, UpdatedAt) fields.
 func (uv *userValidator) Create(user *User) error {
-	if user.Remember == "" {
-		token, err := rand.RememberToken()
-		if err != nil {
-			return err
-		}
-		user.Remember = token
-	}
-	if err := runUserValFuncs(user, uv.bcryptPassword, uv.hmacRemember); err != nil {
+	if err := runUserValFuncs(user, uv.bcryptPassword, uv.defaultRemember, uv.hmacRemember); err != nil {
 		return err
 	}
 	return uv.UserDB.Create(user)
@@ -192,6 +185,18 @@ func (uv *userValidator) bcryptPassword(user *User) error {
 	user.PasswordHash = string(hashedBytes)
 	user.Password = "" // Clears the user-entered pw for log-exclusion
 	return nil
+}
+
+func (us *userValidator) defaultRemember(user *User) error {
+	if user.Remember != ""{
+		return nil
+	}
+		token, err := rand.RememberToken()
+		if err != nil {
+			return err
+		}
+		user.Remember = token
+		return nil
 }
 
 var _ UserDB = &userGorm{}
