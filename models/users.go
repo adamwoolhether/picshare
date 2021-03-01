@@ -37,6 +37,13 @@ var (
 
 	// ErrEmailTaken is returned when an update or create is attampted on an already in-use Email address
 	ErrEmailTaken = errors.New("models: Email address is already taken")
+
+	// ErrRememberTooShort is returned when a remember token is not at least 32 bytes
+	ErrRememberTooShort = errors.New("models: Remember token must be at least 32 bytes")
+
+	// ErrRememberRequired is returned when create or update is attempted
+	// without a remember token hash
+	ErrRememberRequired = errors.New("models: Remember token is required")
 )
 
 const userPwPepper = "+&_|U;_?=r]}~7NZTVf>|^eG>QwL{!^eYkX=TN.4C\".3D$fXo`"
@@ -190,7 +197,9 @@ func (uv *userValidator) Create(user *User) error {
 		uv.bcryptPassword,
 		uv.passwordHashRequired,
 		uv.defaultRemember,
+		uv.rememberMinBytes,
 		uv.hmacRemember,
+		uv.rememberdHashRequired,
 		uv.emailNormalize,
 		uv.emailRequire,
 		uv.emailFormat,
@@ -206,7 +215,9 @@ func (uv *userValidator) Update(user *User) error {
 		uv.passwordMinLength,
 		uv.bcryptPassword,
 		uv.passwordHashRequired,
+		uv.rememberMinBytes,
 		uv.hmacRemember,
+		uv.rememberdHashRequired,
 		uv.emailNormalize,
 		uv.emailRequire,
 		uv.emailFormat,
@@ -254,6 +265,26 @@ func (us *userValidator) defaultRemember(user *User) error {
 		return err
 	}
 	user.Remember = token
+	return nil
+}
+
+func (uv *userValidator) rememberMinBytes (user *User) error {
+	if user.Remember == "" {
+		return nil
+	}
+	n, err := rand.NBytes(user.Remember); if err != nil {
+		return err
+	}
+	if n < 32 {
+		return ErrRememberTooShort
+	}
+	return nil
+}
+
+func (uv *userValidator) rememberdHashRequired (user *User) error {
+	if user.RememberHash == ""{
+		return ErrRememberRequired
+	}
 	return nil
 }
 
