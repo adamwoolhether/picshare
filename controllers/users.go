@@ -24,13 +24,22 @@ type Users struct {
 	us        models.UserService
 }
 
-//// New renders the form allowing users to create a new account
-//// GET /signup
-//func (u *Users) New(w http.ResponseWriter, r *http.Request) {
-//	if err := u.NewView.Render(w, nil); err != nil {
-//		panic(err)
-//	}
-//}
+// New renders the form allowing users to create a new account
+// GET /signup
+func (u *Users) New(w http.ResponseWriter, r *http.Request) {
+	type Alert struct {
+		Level string
+		Message string
+	}
+	// this is what we pass into the `data` arg of Render (up until now we've used nil)
+	a := Alert{
+		Level: "warning",
+		Message: "test passed",
+	}
+	if err := u.NewView.Render(w, a); err != nil {
+		panic(err)
+	}
+}
 
 type SignupForm struct {
 	Name     string `scheme:"name"`
