@@ -27,22 +27,12 @@ type Users struct {
 // New renders the form allowing users to create a new account
 // GET /signup
 func (u *Users) New(w http.ResponseWriter, r *http.Request) {
-	type Alert struct {
-		Level string
-		Message string
-	}
-	type Data struct {
-		Alert Alert
-		Yield interface{}
-	}
-	// this is what we pass into the `data` arg of Render (up until now we've used nil)
-	a := Alert{
-		Level: "warning",
-		Message: "test passed",
-	}
-	d := Data{
-		Alert: a,
-		Yield: "hello!",
+	d := views.Data{
+		Alert: &views.Alert{
+			Level: views.AlertLvlError,
+			Message: "testing the alert message",
+		},
+		Yield: "WOOW",
 	}
 	if err := u.NewView.Render(w, d); err != nil {
 		panic(err)
