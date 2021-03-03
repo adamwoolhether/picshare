@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"picapp/models"
 	"picapp/rand"
@@ -27,14 +28,7 @@ type Users struct {
 // New renders the form allowing users to create a new account
 // GET /signup
 func (u *Users) New(w http.ResponseWriter, r *http.Request) {
-	d := views.Data{
-		Alert: &views.Alert{
-			Level: views.AlertLvlError,
-			Message: "testing the alert message",
-		},
-		Yield: "WOOW",
-	}
-	if err := u.NewView.Render(w, d); err != nil {
+	if err := u.NewView.Render(w, nil); err != nil {
 		panic(err)
 	}
 }
@@ -48,22 +42,32 @@ type SignupForm struct {
 // Create process the signup form after user submission
 // POST /signup
 func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
+	var vd views.Data
 	var form SignupForm
 	if err := parseForm(r, &form); err != nil {
-		panic(err)
+		log.Println(err)
+		vd.Alert = &views.Alert{
+			Level:   views.AlertLvlError,
+			Message: views.AlertMsgGeneric,
+		}
+		u.NewView.Render(w, vd)
+		return
 	}
 	user := models.User{
 		Name:     form.Name,
 		Email:    form.Email,
 		Password: form.Password,
 	}
-	err := u.us.Create(&user)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if err := u.us.Create(&user); err != nil {
+		vd.Alert = &views.Alert{
+			Level:   views.AlertLvlError,
+			Message: err.Error(),
+		}
+		u.NewView.Render(w, vd)
 		return
 	}
-	err = u.signIn(w, &user); if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if err := u.signIn(w, &user); err != nil {
+		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 	http.Redirect(w, r, "/cookietest", http.StatusFound)
@@ -95,7 +99,8 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = u.signIn(w, user); if err != nil {
+	err = u.signIn(w, user)
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -105,17 +110,19 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 // signIn signs in a given user after account creation and sets cookies
 func (u *Users) signIn(w http.ResponseWriter, user *models.User) error {
 	if user.Remember == "" {
-		token, err := rand.RememberToken(); if err != nil {
+		token, err := rand.RememberToken()
+		if err != nil {
 			return err
 		}
 		user.Remember = token
-		err = u.us.Update(user); if err != nil {
+		err = u.us.Update(user)
+		if err != nil {
 			return err
 		}
 	}
 	cookie := http.Cookie{
-		Name:  "remember_token",
-		Value: user.Remember,
+		Name:     "remember_token",
+		Value:    user.Remember,
 		HttpOnly: true,
 	}
 	http.SetCookie(w, &cookie) // Must write cookie to http.ResponseWriter before writing with Fprint
@@ -124,11 +131,13 @@ func (u *Users) signIn(w http.ResponseWriter, user *models.User) error {
 
 // CookieTest displays the cookies set on the current user
 func (u *Users) CookieTest(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("remember_token"); if err != nil {
+	cookie, err := r.Cookie("remember_token")
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	user, err := u.us.ByRemember(cookie.Value); if err != nil {
+	user, err := u.us.ByRemember(cookie.Value)
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

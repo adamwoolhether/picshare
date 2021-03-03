@@ -5,6 +5,9 @@ const (
 	AlerLvlWarning  = "warning"
 	AlertLvlInfo    = "info"
 	AlertLvlSuccess = "success"
+
+	// AlertMsgGeneric displays when any random/unexpected error is encountered by our backend.
+	AlertMsgGeneric = "Something went wrong. Please try again and let me know if it persists."
 )
 
 // Alert is used to render boostrap alert messages in templates
