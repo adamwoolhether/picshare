@@ -31,12 +31,20 @@ func (u *Users) New(w http.ResponseWriter, r *http.Request) {
 		Level string
 		Message string
 	}
+	type Data struct {
+		Alert Alert
+		Yield interface{}
+	}
 	// this is what we pass into the `data` arg of Render (up until now we've used nil)
 	a := Alert{
 		Level: "warning",
 		Message: "test passed",
 	}
-	if err := u.NewView.Render(w, a); err != nil {
+	d := Data{
+		Alert: a,
+		Yield: "hello!",
+	}
+	if err := u.NewView.Render(w, d); err != nil {
 		panic(err)
 	}
 }
