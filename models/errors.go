@@ -13,7 +13,7 @@ const (
 	ErrIDInvalid modelError = "models: Provided ID is invalid"
 
 	// ErrPasswordIncorrect is returned when an invalid password is used in an authentication attempt
-	ErrPasswordIncorrect modelError = "models: Provided password is invalid"
+	ErrPasswordIncorrect modelError = "models: Incorrect password invalid"
 
 	// ErrPasswordTooShort is returned during update or create when given password is less than 8 chars
 	ErrPasswordTooShort modelError = "models: Password must be at least 8 characters long"
@@ -24,7 +24,7 @@ const (
 	// ErrEmailRequired is returned when an email address it not provided at user creation
 	ErrEmailRequired modelError = "models: Email address is required"
 
-	// ErrEmailInvalid is returned when a proivded email address doesn't match our requirements
+	// ErrEmailInvalid is returned when a provided email address doesn't match our requirements
 	ErrEmailInvalid modelError = "models: Email address is not valid"
 
 	// ErrEmailTaken is returned when an update or create is attampted on an already in-use Email address
