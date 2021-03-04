@@ -21,3 +21,22 @@ type Data struct {
 	Alert *Alert
 	Yield interface{}
 }
+
+func (d *Data) SetAlert(err error) {
+	if pErr, ok := err.(PublicError); ok { // example of a type assertion
+		d.Alert = &Alert{
+			Level:   AlertLvlError,
+			Message: pErr.Public(),
+		}
+	} else {
+		d.Alert = &Alert{
+			Level:   AlertLvlError,
+			Message: AlertMsgGeneric,
+		}
+	}
+}
+
+type PublicError interface {
+	error
+	Public() string
+}

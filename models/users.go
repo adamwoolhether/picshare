@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/postgres"
 	_ "gorm.io/driver/postgres"
@@ -11,39 +10,6 @@ import (
 	"picapp/rand"
 	"regexp"
 	"strings"
-)
-
-var (
-	// ErrNotFound is returned when a resource isn't found in the database
-	ErrNotFound = errors.New("models: resource not found")
-
-	// ErrIDInvalid is returned when an invalid ID is provided to an verb method
-	ErrIDInvalid = errors.New("models: Provided ID is invalid")
-
-	// ErrPasswordIncorrect is returned when an invalid password is used in an authentication attempt
-	ErrPasswordIncorrect = errors.New("models: Provided password is invalid")
-
-	// ErrPasswordTooShort is returned during update or create when given password is less than 8 chars
-	ErrPasswordTooShort = errors.New("models: Password must be at least 8 characters long")
-
-	// ErrPasswordRequired is return when create is attempted without a password
-	ErrPasswordRequired = errors.New("models: Password is required")
-
-	// ErrEmailRequired is returned when an email address it not provided at user creation
-	ErrEmailRequired = errors.New("models: Email address is required")
-
-	// ErrEmailInvalid is returned when a proivded email address doesn't match our requirements
-	ErrEmailInvalid = errors.New("models: Email address is not valid")
-
-	// ErrEmailTaken is returned when an update or create is attampted on an already in-use Email address
-	ErrEmailTaken = errors.New("models: Email address is already taken")
-
-	// ErrRememberTooShort is returned when a remember token is not at least 32 bytes
-	ErrRememberTooShort = errors.New("models: Remember token must be at least 32 bytes")
-
-	// ErrRememberRequired is returned when create or update is attempted
-	// without a remember token hash
-	ErrRememberRequired = errors.New("models: Remember token is required")
 )
 
 const userPwPepper = "+&_|U;_?=r]}~7NZTVf>|^eG>QwL{!^eYkX=TN.4C\".3D$fXo`"
@@ -268,11 +234,12 @@ func (us *userValidator) defaultRemember(user *User) error {
 	return nil
 }
 
-func (uv *userValidator) rememberMinBytes (user *User) error {
+func (uv *userValidator) rememberMinBytes(user *User) error {
 	if user.Remember == "" {
 		return nil
 	}
-	n, err := rand.NBytes(user.Remember); if err != nil {
+	n, err := rand.NBytes(user.Remember)
+	if err != nil {
 		return err
 	}
 	if n < 32 {
@@ -281,8 +248,8 @@ func (uv *userValidator) rememberMinBytes (user *User) error {
 	return nil
 }
 
-func (uv *userValidator) rememberdHashRequired (user *User) error {
-	if user.RememberHash == ""{
+func (uv *userValidator) rememberdHashRequired(user *User) error {
+	if user.RememberHash == "" {
 		return ErrRememberRequired
 	}
 	return nil
@@ -337,7 +304,7 @@ func (uv *userValidator) emailIsAvail(user *User) error {
 	return nil
 }
 
-func (uv *userValidator) passwordMinLength (user *User) error {
+func (uv *userValidator) passwordMinLength(user *User) error {
 	if user.Password == "" {
 		return nil
 	}
@@ -347,15 +314,15 @@ func (uv *userValidator) passwordMinLength (user *User) error {
 	return nil
 }
 
-func (uv *userValidator) passwordRequired (user *User) error {
+func (uv *userValidator) passwordRequired(user *User) error {
 	if user.Password == "" {
 		return ErrPasswordRequired
 	}
 	return nil
 }
 
-func (uv *userValidator) passwordHashRequired (user *User) error {
-	if user.PasswordHash == ""{
+func (uv *userValidator) passwordHashRequired(user *User) error {
+	if user.PasswordHash == "" {
 		return ErrPasswordRequired
 	}
 	return nil
