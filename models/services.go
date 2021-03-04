@@ -13,7 +13,9 @@ func NewServices(connectionInfo string) (*Services, error) {
 	}); if err != nil {
 		return nil, err
 	}
-	return &Services{}, nil //TODO input data to be returned
+	return &Services{
+		User: NewUserService(db),
+	}, nil //TODO input data to be returned
 }
 
 type Services struct {
