@@ -39,13 +39,6 @@ type UserDB interface {
 	Create(user *User) error
 	Update(user *User) error
 	Delete(id uint) error
-
-	// Methods used to close a DB connection
-	//Close() error
-
-	// Migration helpers
-	AutoMigrate() error
-	DestructiveReset() error
 }
 
 // UserService is a set of methods used to manipulate and work with the user model.
@@ -374,27 +367,6 @@ func (ug *userGorm) Update(user *User) error {
 func (ug *userGorm) Delete(id uint) error {
 	user := User{Model: gorm.Model{ID: id}}
 	return ug.db.Delete(&user).Error
-}
-
-/*// Closing the DB ***not sure about this method***
-func (us *UserService) Close() error {
-	return us.db.Close
-}*/
-
-// DestructiveReset drops the user table and rebuilds it.
-func (ug *userGorm) DestructiveReset() error {
-	if err := ug.db.Migrator().DropTable(&User{}); err != nil {
-		return err
-	}
-	return ug.db.AutoMigrate()
-}
-
-// AutoMigrate attempts to automatically migrate the users table.
-func (ug *userGorm) AutoMigrate() error {
-	if err := ug.db.AutoMigrate(&User{}); err != nil {
-		return err
-	}
-	return nil
 }
 
 // first queries the provided *gorm.DB, gets the first item returned and places it in dst.
