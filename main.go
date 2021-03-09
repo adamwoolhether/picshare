@@ -38,6 +38,7 @@ func main() {
 	r.HandleFunc("/cookietest", usersC.CookieTest).Methods("GET")
 	// Gallery routes
 	r.Handle("/galleries/new", galleriesC.New).Methods("GET")
+	r.HandleFunc("/galleries", galleriesC.Create).Methods("POST")
 
 
 	fmt.Println("Starting the server on :3000...")
