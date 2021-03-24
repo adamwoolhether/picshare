@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"picapp/controllers"
+	"picapp/middleware"
 	"picapp/models"
 
 	"github.com/gorilla/mux"
@@ -27,6 +28,7 @@ func main() {
 	staticC := controllers.NewStatic()
 	usersC := controllers.NewUsers(services.User)
 	galleriesC := controllers.NewGalleries(services.Gallery)
+	requireUserMW := middleware.RequireUser{services.User}
 
 	r := mux.NewRouter()
 	r.Handle("/", staticC.Home).Methods("GET")
@@ -37,8 +39,8 @@ func main() {
 	r.HandleFunc("/login", usersC.Login).Methods("POST")
 	r.HandleFunc("/cookietest", usersC.CookieTest).Methods("GET")
 	// Gallery routes
-	r.Handle("/galleries/new", galleriesC.New).Methods("GET")
-	r.HandleFunc("/galleries", galleriesC.Create).Methods("POST")
+	r.Handle("/galleries/new", requireUserMW.Apply(galleriesC.New)).Methods("GET")
+	r.HandleFunc("/galleries", requireUserMW.Apply(galleriesC.New)).Methods("POST")
 
 
 	fmt.Println("Starting the server on :3000...")
