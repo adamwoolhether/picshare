@@ -371,6 +371,7 @@ func (ug *userGorm) Delete(id uint) error {
 
 // first queries the provided *gorm.DB, gets the first item returned and places it in dst.
 // if nothing is found in the query, it will return ErrNotFound
+// TODO: MOVE FIRST FUNCTION
 func first(db *gorm.DB, dst interface{}) error {
 	err := db.First(dst).Error
 	if err == gorm.ErrRecordNotFound {
