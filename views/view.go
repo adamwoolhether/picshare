@@ -55,7 +55,7 @@ func (v *View) Render(w http.ResponseWriter, data interface{}) {
 	var buf bytes.Buffer
 	if err := v.Template.ExecuteTemplate(&buf, v.Layout, data); err != nil {
 		http.Error(w,"Something went wrong. Please contact me if this persists:"+
-			"adamwoolhethet@gmail.com",http.StatusInternalServerError)
+			"adamwoolhether@gmail.com",http.StatusInternalServerError)
 		return
 	}
 	io.Copy(w, &buf)
