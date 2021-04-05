@@ -1,5 +1,7 @@
 package views
 
+import "picapp/models"
+
 const (
 	AlertLvlError   = "danger"
 	AlerLvlWarning  = "warning"
@@ -19,6 +21,7 @@ type Alert struct {
 // Data is the top level structure that views expect data to come in
 type Data struct {
 	Alert *Alert
+	User *models.User
 	Yield interface{}
 }
 
