@@ -17,6 +17,7 @@ func NewServices(connectionInfo string) (*Services, error) {
 	return &Services{
 		User: NewUserService(db),
 		Gallery: NewGalleryService(db),
+		Image: NewImageService(),
 		db:   db,
 	}, nil //TODO input data to be returned
 }
@@ -24,6 +25,7 @@ func NewServices(connectionInfo string) (*Services, error) {
 type Services struct {
 	Gallery GalleryService
 	User    UserService
+	Image ImageService
 	db      *gorm.DB
 }
 
