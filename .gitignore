@@ -58,12 +58,9 @@ builds/**/images/*
 **/tmp/*
 
 # Don't include our binary
-lenslocked.com
-images/**
+picapp
+**/images/**
 
 .config
 notes/**
 .vscode/**
-
-# Don't include our binary
-picapp

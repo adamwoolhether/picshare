@@ -43,18 +43,16 @@ func main() {
 	r.HandleFunc("/signup", usersC.Create).Methods("POST")
 	r.Handle("/login", usersC.LoginView).Methods("GET")
 	r.HandleFunc("/login", usersC.Login).Methods("POST")
+
 	// Gallery routes
 	r.Handle("/galleries", requireUserMW.ApplyFn(galleriesC.Index)).Methods("GET")
 	r.Handle("/galleries/new", requireUserMW.Apply(galleriesC.New)).Methods("GET")
 	r.HandleFunc("/galleries", requireUserMW.ApplyFn(galleriesC.Create)).Methods("POST")
-	r.HandleFunc("/galleries/{id:[0-9]+}/edit",
-		requireUserMW.ApplyFn(galleriesC.Edit)).Methods("GET").Name(controllers.EditGallery)
-	r.HandleFunc("/galleries/{id:[0-9]+}/update",
-		requireUserMW.ApplyFn(galleriesC.Update)).Methods("POST")
-	r.HandleFunc("/galleries/{id:[0-9]+}/delete",
-		requireUserMW.ApplyFn(galleriesC.Delete)).Methods("POST")
-	r.HandleFunc("/galleries/{id:[0-9]+}",
-		galleriesC.Show).Methods("GET").Name(controllers.ShowGalleryName)
+	r.HandleFunc("/galleries/{id:[0-9]+}/edit", requireUserMW.ApplyFn(galleriesC.Edit)).Methods("GET").Name(controllers.EditGallery)
+	r.HandleFunc("/galleries/{id:[0-9]+}/update", requireUserMW.ApplyFn(galleriesC.Update)).Methods("POST")
+	r.HandleFunc("/galleries/{id:[0-9]+}/images", requireUserMW.ApplyFn(galleriesC.ImageUpload)).Methods("POST")
+	r.HandleFunc("/galleries/{id:[0-9]+}/delete", requireUserMW.ApplyFn(galleriesC.Delete)).Methods("POST")
+	r.HandleFunc("/galleries/{id:[0-9]+}", galleriesC.Show).Methods("GET").Name(controllers.ShowGalleryName)
 
 	fmt.Println("Starting the server on :3000...")
 	http.ListenAndServe("localhost:3000", userMW.Apply(r))
