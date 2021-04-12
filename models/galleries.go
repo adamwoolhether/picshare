@@ -8,6 +8,7 @@ type Gallery struct {
 	gorm.Model
 	UserID uint   `gorm:"not null;index"`
 	Title  string `gorm:"not null"`
+	Images []string `gorm:"-"`
 	// needs a slug
 }
 
