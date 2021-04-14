@@ -1,7 +1,10 @@
 {{define "yield"}}
     <div class="row">
         <div class="col-md-10 col-md-offset-1">
-            <h3>Edit your gallery</h3>
+            <h2>Edit your gallery</h2>
+            <a href="/galleries/{{.ID}}">
+                View
+            </a>
             <hr>
         </div>
         <div class="col-md-12">
@@ -10,9 +13,9 @@
     </div>
     <div class="row">
         <div class="col-md-1">
-            <lavel class="control-label pull-right">
+            <label class="control-label pull-right">
                 Images
-            </lavel>
+            </label>
         </div>
         <div class="col-md-10">
             {{template "galleryImages" .}}
@@ -74,11 +77,18 @@
 {{end}}
 
 {{define "galleryImages"}}
-    <ul>
-        {{ range .Images}}
-            <li>
-                {{.}}
-            </li>
-        {{end}}
-    </ul>
+    {{range .ImagesSplitN 6}}
+        <div class="col-md-2">
+            {{range .}}
+                <a href="{{.}}">
+                    <img src="{{.}}" class="thumbnail">
+                </a>
+            {{end}}
+        </div>
+    {{end}}
+    <style>
+        .thumbnail {
+            width: 100%;
+        }
+    </style>
 {{end}}

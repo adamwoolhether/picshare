@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"html/template"
 	"io"
+	"log"
 	"net/http"
 	"path/filepath"
 	"picapp/context"
@@ -58,6 +59,7 @@ func (v *View) Render(w http.ResponseWriter, r *http.Request, data interface{}) 
 	vd.User = context.User(r.Context())
 	var buf bytes.Buffer
 	if err := v.Template.ExecuteTemplate(&buf, v.Layout, vd); err != nil {
+		log.Println(err)
 		http.Error(w,"Something went wrong. Please contact me if this persists:"+
 			"adamwoolhether@gmail.com",http.StatusInternalServerError)
 		return
