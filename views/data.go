@@ -1,6 +1,9 @@
 package views
 
-import "picapp/models"
+import (
+	"log"
+	"picapp/models"
+)
 
 const (
 	AlertLvlError   = "danger"
@@ -32,6 +35,7 @@ func (d *Data) SetAlert(err error) {
 			Message: pErr.Public(),
 		}
 	} else {
+		log.Println(err)
 		d.Alert = &Alert{
 			Level:   AlertLvlError,
 			Message: AlertMsgGeneric,
