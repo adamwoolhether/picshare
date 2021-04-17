@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"log"
 	"net/http"
 	"picapp/models"
 	"picapp/rand"
@@ -42,7 +41,6 @@ func (g *Users) Create(w http.ResponseWriter, r *http.Request) {
 	var vd views.Data
 	var form SignupForm
 	if err := parseForm(r, &form); err != nil {
-		log.Println(err)
 		vd.SetAlert(err)
 		g.NewView.Render(w, r, vd)
 		return
@@ -75,7 +73,6 @@ func (g *Users) Login(w http.ResponseWriter, r *http.Request) {
 	var vd views.Data
 	form := LoginForm{}
 	if err := parseForm(r, &form); err != nil {
-		log.Println(err)
 		g.NewView.Render(w, r, vd)
 		return
 	}
