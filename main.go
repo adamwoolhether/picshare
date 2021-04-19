@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"github.com/gorilla/csrf"
 	"net/http"
 	"picapp/controllers"
 	"picapp/middleware"
 	"picapp/models"
+	"picapp/rand"
 
 	"github.com/gorilla/mux"
 )
@@ -30,6 +32,11 @@ func main() {
 	usersC := controllers.NewUsers(services.User)
 	galleriesC := controllers.NewGalleries(services.Gallery, services.Image, r)
 
+	//TODO: update isProd to be a config var
+	isProd := false
+	b, err := rand.Bytes(32)
+	must(err)
+	CSRF := csrf.Protect(b, csrf.Secure(isProd))
 	userMW := middleware.User{
 		UserService: services.User,
 	}
@@ -65,7 +72,7 @@ func main() {
 	r.HandleFunc("/galleries/{id:[0-9]+}", galleriesC.Show).Methods("GET").Name(controllers.ShowGalleryName)
 
 	fmt.Println("Starting the server on :3000...")
-	http.ListenAndServe("localhost:3000", userMW.Apply(r))
+	http.ListenAndServe("localhost:3000", CSRF(userMW.Apply(r)))
 }
 
 func must(err error) {
