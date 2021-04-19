@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"picapp/context"
 	"picapp/models"
+	"strings"
 )
 
 type User struct {
@@ -16,6 +17,12 @@ func (mw *User) Apply(next http.Handler) http.HandlerFunc {
 
 func (mw *User) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Prevent user lookup for static assets, which is unneeded
+		path := r.URL.Path
+		if strings.HasPrefix(path, "/assets/") || strings.HasPrefix(path, "/images/") {
+			next(w, r)
+			return
+		}
 		cookie, err := r.Cookie("remember_token")
 		if err != nil {
 			next(w, r)
@@ -32,7 +39,6 @@ func (mw *User) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
 		next(w, r)
 	})
 }
-
 
 // RequireUser assumes that User middleware has already been run
 type RequireUser struct {
