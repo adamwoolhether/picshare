@@ -6,21 +6,56 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func NewServices(connectionInfo string) (*Services, error) {
-	//TODO: Export to config
-	db, err := gorm.Open(postgres.Open(connectionInfo),
-		&gorm.Config{
-			Logger: logger.Default.LogMode(logger.Info),
-		})
-	if err != nil {
-		return nil, err
+type ServicesConfig func(*Services) error
+
+func WithGorm(connectionInfo string, logMode bool) ServicesConfig {
+	// 1 == Silent, 4 == Info
+	logs := logger.LogLevel(1)
+	if logMode == true {
+		logs = 4
 	}
-	return &Services{
-		User:    NewUserService(db),
-		Gallery: NewGalleryService(db),
-		Image:   NewImageService(),
-		db:      db,
-	}, nil //TODO input data to be returned
+	return func(s *Services) error {
+		db, err := gorm.Open(postgres.Open(connectionInfo),
+			&gorm.Config{
+				Logger: logger.Default.LogMode(logs),
+			})
+		if err != nil {
+			return err
+		}
+		s.db = db
+		return nil
+	}
+}
+
+func WithUser(pepper, hmacKey string) ServicesConfig {
+	return func(s *Services) error {
+		s.User = NewUserService(s.db, pepper, hmacKey)
+		return nil
+	}
+}
+
+func WithGallery() ServicesConfig {
+	return func(s *Services) error {
+		s.Gallery = NewGalleryService(s.db)
+		return nil
+	}
+}
+
+func WithImage() ServicesConfig {
+	return func(s *Services) error {
+		s.Image = NewImageService()
+		return nil
+	}
+}
+
+func NewServices(cfgs ...ServicesConfig) (*Services, error) {
+	var s Services
+	for _, cfg := range cfgs {
+		if err := cfg(&s); err != nil {
+			return nil, err
+		}
+	}
+	return &s, nil
 }
 
 type Services struct {
@@ -31,6 +66,7 @@ type Services struct {
 }
 
 /*// Closing the DB ***not sure about this method***
+// This is not needed with new Gorm version
 func (us *UserService) Close() error {
 	return us.db.Close
 }*/

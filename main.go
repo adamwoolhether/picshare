@@ -15,7 +15,12 @@ import (
 func main() {
 	cfg := DefaultConfig()
 	dbConf := DefaultPostgresConfig()
-	services, err := models.NewServices(dbConf.PsqlConnInfo())
+	services, err := models.NewServices(
+		models.WithGorm(dbConf.PsqlConnInfo(), !cfg.IsProd()),
+		models.WithUser(cfg.Pepper, cfg.HMACKey),
+		models.WithGallery(),
+		models.WithImage(),
+	)
 	must(err)
 	//services.DestructiveReset()
 	services.AutoMigrate()
@@ -49,7 +54,6 @@ func main() {
 	// Image routes
 	imageHandler := http.FileServer(http.Dir("./images/"))
 	r.PathPrefix("/images/").Handler(http.StripPrefix("/images/", imageHandler))
-
 
 	// Gallery routes
 	r.Handle("/galleries", requireUserMW.ApplyFn(galleriesC.Index)).Methods("GET")

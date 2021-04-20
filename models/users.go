@@ -9,10 +9,6 @@ import (
 	"strings"
 )
 
-// TODO: Export to config
-const userPwPepper = "+&_|U;_?=r]}~7NZTVf>|^eG>QwL{!^eYkX=TN.4C\".3D$fXo`"
-const hmacSecretKey = "secret-hmac-key"
-
 // User represents the user model stored in the DB. It stores email addresses and passwords for user login.
 type User struct {
 	gorm.Model
@@ -54,6 +50,7 @@ var _ UserService = &userService{}
 
 type userService struct {
 	UserDB
+	pepper string
 }
 
 // Authenticate will authenticate a user with the provided email & password
@@ -63,7 +60,7 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 		return nil, err
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(foundUser.PasswordHash), []byte(password+userPwPepper))
+	err = bcrypt.CompareHashAndPassword([]byte(foundUser.PasswordHash), []byte(password+us.pepper))
 	if err != nil {
 		switch err {
 		case bcrypt.ErrMismatchedHashAndPassword:
@@ -76,12 +73,13 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 	return foundUser, nil
 }
 
-func NewUserService(db *gorm.DB) UserService {
+func NewUserService(db *gorm.DB, pepper, hmackey string) UserService {
 	ug := &userGorm{db}
-	hmac := hash.NewHMAC(hmacSecretKey)
-	uv := newUserValidator(ug, hmac)
+	hmac := hash.NewHMAC(hmackey)
+	uv := newUserValidator(ug, hmac, pepper)
 	return &userService{
 		UserDB: uv,
+		pepper: pepper,
 	}
 }
 
@@ -106,11 +104,12 @@ func (uv *userValidator) hmacRemember(user *User) error {
 
 var _ UserDB = &userValidator{}
 
-func newUserValidator(udb UserDB, hmac hash.HMAC) *userValidator {
+func newUserValidator(udb UserDB, hmac hash.HMAC, pepper string) *userValidator {
 	return &userValidator{
 		UserDB:     udb,
 		hmac:       hmac,
 		emailRegex: regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,16}$`),
+		pepper: pepper,
 	}
 }
 
@@ -118,6 +117,7 @@ type userValidator struct {
 	UserDB
 	hmac       hash.HMAC
 	emailRegex *regexp.Regexp
+	pepper string
 }
 
 // ByEmail normalizes the email address before calling ByEmail
@@ -153,7 +153,7 @@ func (uv *userValidator) Create(user *User) error {
 		uv.defaultRemember,
 		uv.rememberMinBytes,
 		uv.hmacRemember,
-		uv.rememberdHashRequired,
+		uv.rememberHashRequired,
 		uv.emailNormalize,
 		uv.emailRequire,
 		uv.emailFormat,
@@ -171,7 +171,7 @@ func (uv *userValidator) Update(user *User) error {
 		uv.passwordHashRequired,
 		uv.rememberMinBytes,
 		uv.hmacRemember,
-		uv.rememberdHashRequired,
+		uv.rememberHashRequired,
 		uv.emailNormalize,
 		uv.emailRequire,
 		uv.emailFormat,
@@ -200,7 +200,7 @@ func (uv *userValidator) bcryptPassword(user *User) error {
 	if user.Password == "" {
 		return nil
 	}
-	pwBytes := []byte(user.Password + userPwPepper)
+	pwBytes := []byte(user.Password + uv.pepper)
 	hashedBytes, err := bcrypt.GenerateFromPassword(pwBytes, bcrypt.DefaultCost)
 	if err != nil {
 		return err
@@ -236,7 +236,7 @@ func (uv *userValidator) rememberMinBytes(user *User) error {
 	return nil
 }
 
-func (uv *userValidator) rememberdHashRequired(user *User) error {
+func (uv *userValidator) rememberHashRequired(user *User) error {
 	if user.RememberHash == "" {
 		return ErrRememberRequired
 	}
