@@ -62,7 +62,7 @@ func main() {
 	r.HandleFunc("/galleries/{id:[0-9]+}/delete", requireUserMW.ApplyFn(galleriesC.Delete)).Methods("POST")
 	r.HandleFunc("/galleries/{id:[0-9]+}", galleriesC.Show).Methods("GET").Name(controllers.ShowGalleryName)
 
-	fmt.Println("Starting the server on :%d...\n", cfg.Port)
+	fmt.Printf("Starting the server on :%d...\n", cfg.Port)
 	http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), CSRF(userMW.Apply(r)))
 }
 
