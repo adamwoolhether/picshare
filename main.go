@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/gorilla/csrf"
 	"net/http"
@@ -13,8 +14,12 @@ import (
 )
 
 func main() {
-	cfg := DefaultConfig()
-	dbConf := DefaultPostgresConfig()
+	boolPtr := flag.Bool("prod", false, "For production, set to true if providing a config file "+
+		"before application initialization")
+	flag.Parse()
+
+	cfg := LoadConfig(*boolPtr)
+	dbConf := cfg.Database
 	services, err := models.NewServices(
 		models.WithGorm(dbConf.PsqlConnInfo(), !cfg.IsProd()),
 		models.WithUser(cfg.Pepper, cfg.HMACKey),
