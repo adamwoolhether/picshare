@@ -12,17 +12,10 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const (
-	host   = "localhost"
-	port   = 5432
-	user   = "adam"
-	dbname = "picapp"
-)
-
 func main() {
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable",
-		host, port, user, dbname)
-	services, err := models.NewServices(psqlInfo)
+	cfg := DefaultConfig()
+	dbConf := DefaultPostgresConfig()
+	services, err := models.NewServices(dbConf.PsqlConnInfo())
 	must(err)
 	//services.DestructiveReset()
 	services.AutoMigrate()
@@ -32,11 +25,9 @@ func main() {
 	usersC := controllers.NewUsers(services.User)
 	galleriesC := controllers.NewGalleries(services.Gallery, services.Image, r)
 
-	//TODO: update isProd to be a config var
-	isProd := false
 	b, err := rand.Bytes(32)
 	must(err)
-	CSRF := csrf.Protect(b, csrf.Secure(isProd))
+	CSRF := csrf.Protect(b, csrf.Secure(cfg.IsProd()))
 	userMW := middleware.User{
 		UserService: services.User,
 	}
@@ -71,8 +62,8 @@ func main() {
 	r.HandleFunc("/galleries/{id:[0-9]+}/delete", requireUserMW.ApplyFn(galleriesC.Delete)).Methods("POST")
 	r.HandleFunc("/galleries/{id:[0-9]+}", galleriesC.Show).Methods("GET").Name(controllers.ShowGalleryName)
 
-	fmt.Println("Starting the server on :3000...")
-	http.ListenAndServe("localhost:3000", CSRF(userMW.Apply(r)))
+	fmt.Println("Starting the server on :%d...\n", cfg.Port)
+	http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), CSRF(userMW.Apply(r)))
 }
 
 func must(err error) {

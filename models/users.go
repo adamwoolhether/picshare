@@ -2,7 +2,6 @@ package models
 
 import (
 	"golang.org/x/crypto/bcrypt"
-	_ "gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"picapp/hash"
 	"picapp/rand"
@@ -10,6 +9,7 @@ import (
 	"strings"
 )
 
+// TODO: Export to config
 const userPwPepper = "+&_|U;_?=r]}~7NZTVf>|^eG>QwL{!^eYkX=TN.4C\".3D$fXo`"
 const hmacSecretKey = "secret-hmac-key"
 

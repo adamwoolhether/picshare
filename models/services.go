@@ -7,6 +7,7 @@ import (
 )
 
 func NewServices(connectionInfo string) (*Services, error) {
+	//TODO: Export to config
 	db, err := gorm.Open(postgres.Open(connectionInfo),
 		&gorm.Config{
 			Logger: logger.Default.LogMode(logger.Info),

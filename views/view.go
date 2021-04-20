@@ -12,6 +12,8 @@ import (
 	"picapp/context"
 )
 
+// NOTE: If you use different directories for production,
+// these should be set in config file.
 var (
 	LayoutDir   string = "views/layouts/"
 	TemplateDir string = "views/"
