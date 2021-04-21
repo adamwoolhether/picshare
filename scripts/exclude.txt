@@ -1,0 +1,6 @@
+.git/*
+tmp/*
+images/*
+.gitignore
+.config
+config.go
