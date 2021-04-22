@@ -61,7 +61,11 @@ func (g *Users) Create(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
-	http.Redirect(w, r, "/galleries", http.StatusFound)
+	alert := views.Alert{
+		Level: views.AlertLvlSuccess,
+		Message: "Welcome to the site!",
+	}
+	views.RedirectAlert(w, r, "/galleries", http.StatusFound, alert)
 }
 
 type LoginForm struct {
@@ -97,7 +101,11 @@ func (g *Users) Login(w http.ResponseWriter, r *http.Request) {
 		g.LoginView.Render(w, r, vd)
 		return
 	}
-	http.Redirect(w, r, "/galleries", http.StatusFound)
+	alert := views.Alert{
+		Level: views.AlertLvlSuccess,
+		Message: "Welcome back!",
+	}
+	views.RedirectAlert(w, r, "/galleries", http.StatusFound, alert)
 }
 
 // Logout will delete a users session cooki(remember_token) and
