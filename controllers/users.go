@@ -2,9 +2,11 @@ package controllers
 
 import (
 	"net/http"
+	"picapp/context"
 	"picapp/models"
 	"picapp/rand"
 	"picapp/views"
+	"time"
 )
 
 // NewUsers creates a new Users controller. To be used during initial setup.
@@ -98,6 +100,26 @@ func (g *Users) Login(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/galleries", http.StatusFound)
 }
 
+// Logout will delete a users session cooki(remember_token) and
+// update the user resource with a new remember token.
+func (u *Users) Logout(w http.ResponseWriter, r *http.Request) {
+		cookie := http.Cookie{
+			Name: "remember_token",
+			Value: "",
+			Expires: time.Now(),
+			HttpOnly: true,
+		}
+		http.SetCookie(w, &cookie)
+
+		// Remove remember token adds a bit more security.
+		user := context.User(r.Context())
+		token, _ := rand.RememberToken()
+		user.Remember = token
+		u.us.Update(user)
+		http.Redirect(w, r, "/", http.StatusFound)
+
+}
+
 // signIn signs in a given user after account creation and sets cookies
 func (g *Users) signIn(w http.ResponseWriter, user *models.User) error {
 	if user.Remember == "" {
@@ -116,7 +138,7 @@ func (g *Users) signIn(w http.ResponseWriter, user *models.User) error {
 		Value:    user.Remember,
 		HttpOnly: true,
 	}
-	http.SetCookie(w, &cookie) // Must write cookie to http.ResponseWriter before writing with Fprint
+	http.SetCookie(w, &cookie)
 	return nil
 }
 

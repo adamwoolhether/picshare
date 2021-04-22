@@ -3,6 +3,9 @@
 *.a
 *.so
 
+# Production config file
+prodconfig.config
+
 # Folders
 _obj
 _test
