@@ -12,12 +12,11 @@ import (
 
 // NewUsers creates a new Users controller. To be used during initial setup.
 // If templates are incorrectly parsed, a panic will occur.
-func NewUsers(us models.UserService, emailer *email.Client) *Users {
+func NewUsers(us models.UserService) *Users {
 	return &Users{
 		NewView:   views.NewView("bootstrap", "users/new"),
 		LoginView: views.NewView("bootstrap", "users/login"),
 		us:        us,
-		emailer:   emailer,
 	}
 }
 
@@ -25,7 +24,6 @@ type Users struct {
 	NewView   *views.View
 	LoginView *views.View
 	us        models.UserService
-
 }
 
 // New renders the form allowing users to create a new account
@@ -64,9 +62,9 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
-	u.emailer.Welcome(user.Name, user.Email)	//consider using a go routine here
+	email.SignUpEmail("***REMOVED***", "***REMOVED***", user.Email)
 	alert := views.Alert{
-		Level:   views.AlertLvlSuccess,
+		Level: views.AlertLvlSuccess,
 		Message: "Welcome to the site!",
 	}
 	views.RedirectAlert(w, r, "/galleries", http.StatusFound, alert)
@@ -106,7 +104,7 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	alert := views.Alert{
-		Level:   views.AlertLvlSuccess,
+		Level: views.AlertLvlSuccess,
 		Message: "Welcome back!",
 	}
 	views.RedirectAlert(w, r, "/galleries", http.StatusFound, alert)
@@ -115,20 +113,20 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 // Logout will delete a users session cooki(remember_token) and
 // update the user resource with a new remember token.
 func (u *Users) Logout(w http.ResponseWriter, r *http.Request) {
-	cookie := http.Cookie{
-		Name:     "remember_token",
-		Value:    "",
-		Expires:  time.Now(),
-		HttpOnly: true,
-	}
-	http.SetCookie(w, &cookie)
+		cookie := http.Cookie{
+			Name: "remember_token",
+			Value: "",
+			Expires: time.Now(),
+			HttpOnly: true,
+		}
+		http.SetCookie(w, &cookie)
 
-	// Remove remember token adds a bit more security.
-	user := context.User(r.Context())
-	token, _ := rand.RememberToken()
-	user.Remember = token
-	u.us.Update(user)
-	http.Redirect(w, r, "/", http.StatusFound)
+		// Remove remember token adds a bit more security.
+		user := context.User(r.Context())
+		token, _ := rand.RememberToken()
+		user.Remember = token
+		u.us.Update(user)
+		http.Redirect(w, r, "/", http.StatusFound)
 
 }
 
