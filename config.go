@@ -14,6 +14,21 @@ type PostgresConfig struct {
 	Name     string `json:"name"`
 }
 
+type Config struct {
+	Port     int            `json:"port"`
+	Env      string         `json:"env"`
+	Pepper   string         `json:"pepper"`
+	HMACKey  string         `json:"hmac_key"`
+	Database PostgresConfig `json:"database"`
+	Mailgun  MailgunConfig  `json:"mailgun"`
+}
+
+type MailgunConfig struct {
+	APIKey       string `json:"api_key"`
+	PublicAPIKey string `json:"public_api_key"`
+	Domain       string `json:"domain"`
+}
+
 func (c PostgresConfig) PsqlConnInfo() string {
 	if c.Password == "" {
 		return fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable", c.Host, c.Port, c.User, c.Name)
@@ -29,18 +44,6 @@ func DefaultPostgresConfig() PostgresConfig {
 		Password: "",
 		Name:     "picapp",
 	}
-}
-
-type Config struct {
-	Port     int            `json:"port"`
-	Env      string         `json:"env"`
-	Pepper   string         `json:"pepper"`
-	HMACKey  string         `json:"hmac_key"`
-	Database PostgresConfig `json:"database"`
-}
-
-func (c Config) IsProd() bool {
-	return c.Env == "prod"
 }
 
 func DefaultConfig() Config {
@@ -70,6 +73,11 @@ func LoadConfig(confRequired bool) Config {
 	}
 	fmt.Println(".config loaded successfully...")
 	return c
+}
+
+
+func (c Config) IsProd() bool {
+	return c.Env == "prod"
 }
 
 //# models/services.go

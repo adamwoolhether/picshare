@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/csrf"
 	"net/http"
 	"picapp/controllers"
+	"picapp/email"
 	"picapp/middleware"
 	"picapp/models"
 	"picapp/rand"
@@ -30,9 +31,15 @@ func main() {
 	//services.DestructiveReset()
 	services.AutoMigrate()
 
+	mgCfg := cfg.Mailgun
+	emailer := email.NewClient(
+		email.WithSender("Adam Woolhether - PicApp", "***REMOVED***"),
+		email.WithMailGun(mgCfg.Domain, mgCfg.APIKey),
+	)
+
 	r := mux.NewRouter()
 	staticC := controllers.NewStatic()
-	usersC := controllers.NewUsers(services.User)
+	usersC := controllers.NewUsers(services.User, emailer)
 	galleriesC := controllers.NewGalleries(services.Gallery, services.Image, r)
 
 	b, err := rand.Bytes(32)

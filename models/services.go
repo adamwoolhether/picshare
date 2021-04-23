@@ -12,7 +12,7 @@ func WithGorm(connectionInfo string, logMode bool) ServicesConfig {
 	// 1 == Silent, 4 == Info
 	logs := logger.LogLevel(1)
 	if logMode == true {
-		logs = 4
+		logs = logger.LogLevel(4)
 	}
 	return func(s *Services) error {
 		db, err := gorm.Open(postgres.Open(connectionInfo),
