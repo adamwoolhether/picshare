@@ -67,3 +67,5 @@ picapp
 .config
 notes/**
 .vscode/**
+bfg-1.14.0.jar
+rm.txt
