@@ -1,4 +1,4 @@
-package main
+package conf
 
 import (
 	"encoding/json"
@@ -75,13 +75,6 @@ func LoadConfig(confRequired bool) Config {
 	return c
 }
 
-
 func (c Config) IsProd() bool {
 	return c.Env == "prod"
 }
-
-//# models/services.go
-//db, err := gorm.Open(postgres.Open(connectionInfo),
-//&gorm.Config{
-//Logger: logger.Default.LogMode(logger.Info),
-//})

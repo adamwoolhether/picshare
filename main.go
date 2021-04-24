@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gorilla/csrf"
 	"net/http"
+	"picapp/conf"
 	"picapp/controllers"
 	"picapp/middleware"
 	"picapp/models"
@@ -18,7 +19,7 @@ func main() {
 		"before application initialization")
 	flag.Parse()
 
-	cfg := LoadConfig(*boolPtr)
+	cfg := conf.LoadConfig(*boolPtr)
 	dbConf := cfg.Database
 	services, err := models.NewServices(
 		models.WithGorm(dbConf.PsqlConnInfo(), !cfg.IsProd()),
@@ -29,12 +30,6 @@ func main() {
 	must(err)
 	//services.DestructiveReset()
 	services.AutoMigrate()
-
-	//mgCfg := cfg.Mailgun
-	//emailer := email.NewClient(
-	//	email.WithSender("Adam Woolhether - PicApp", "***REMOVED***"),
-	//	email.WithMailGun(mgCfg.Domain, mgCfg.APIKey),
-	//)
 
 	r := mux.NewRouter()
 	staticC := controllers.NewStatic()

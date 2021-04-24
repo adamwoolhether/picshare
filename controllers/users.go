@@ -62,7 +62,7 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
-	email.SignUpEmail("***REMOVED***", "***REMOVED***", user.Email)
+	email.SignUpEmail(user.Email)
 	alert := views.Alert{
 		Level: views.AlertLvlSuccess,
 		Message: "Welcome to the site!",
