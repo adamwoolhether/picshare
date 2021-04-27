@@ -7,6 +7,7 @@ import (
 	"picapp/rand"
 	"regexp"
 	"strings"
+	"time"
 )
 
 // User represents the user model stored in the DB. It stores email addresses and passwords for user login.
@@ -43,8 +44,10 @@ type UserService interface {
 	// If correct, the corresponding user will be returned.
 	// Otherwise, either ErrNotFound, ErrPasswordIncorrect, or another err.
 	Authenticate(email, password string) (*User, error)
-	InitiatePwRest(email string) (string, error)
-	CompletePwReset(token, newPw string) (*User, error)
+	// InitiatePwReset starts process to reset the user's password by
+	// creating a reset token for the user of corresponding user ID
+	InitiatePwReset(userID uint) (string, error)
+	//CompletePwReset(token, newPw string) (*User, error)
 	UserDB
 }
 
@@ -52,7 +55,8 @@ var _ UserService = &userService{}
 
 type userService struct {
 	UserDB
-	pepper string
+	pepper    string
+	pwResetDB pwResetDB
 }
 
 // Authenticate will authenticate a user with the provided email & password
@@ -80,9 +84,44 @@ func NewUserService(db *gorm.DB, pepper, hmackey string) UserService {
 	hmac := hash.NewHMAC(hmackey)
 	uv := newUserValidator(ug, hmac, pepper)
 	return &userService{
-		UserDB: uv,
-		pepper: pepper,
+		UserDB:    uv,
+		pepper:    pepper,
+		pwResetDB: newPwResetValidtor(&pwResetGorm{db}, hmac),
 	}
+}
+
+func (us *userService) InitiatePwReset(userID uint) (string, error) {
+	pwr := pwReset{
+		UserId: userID,
+	}
+	if err := us.pwResetDB.Create(&pwr); err != nil {
+		return "", err
+	}
+	return pwr.Token, nil
+}
+
+func (us *userService) CompletePwReset(token, newPw string) (*User, error) {
+	pwr, err := us.pwResetDB.ByToken(token)
+	if err != nil {
+		if err == ErrNotFound {
+			return nil, ErrTokenInvalid
+		}
+		return nil, err
+	}
+	if time.Now().Sub(pwr.CreatedAt) > 12*time.Hour {
+		return nil, ErrTokenInvalid
+	}
+	user, err := us.ByID(pwr.UserId)
+	if err != nil {
+		return nil, err
+	}
+	user.Password = newPw
+	err = us.Update(user)
+	if err != nil {
+		return nil, err
+	}
+	us.pwResetDB.Delete(pwr.ID)
+	return user, nil
 }
 
 type userValFunc func(*User) error
@@ -111,7 +150,7 @@ func newUserValidator(udb UserDB, hmac hash.HMAC, pepper string) *userValidator 
 		UserDB:     udb,
 		hmac:       hmac,
 		emailRegex: regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,16}$`),
-		pepper: pepper,
+		pepper:     pepper,
 	}
 }
 
@@ -119,7 +158,7 @@ type userValidator struct {
 	UserDB
 	hmac       hash.HMAC
 	emailRegex *regexp.Regexp
-	pepper string
+	pepper     string
 }
 
 // ByEmail normalizes the email address before calling ByEmail

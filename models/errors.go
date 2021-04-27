@@ -24,6 +24,8 @@ const (
 	ErrIDInvalid privateError = "models: provided ID is invalid"
 	ErrTitleRequired modelError = "models: title is required for galleries"
 
+	ErrTokenInvalid modelError = "models: provided token is invalid"
+
 	// ErrRememberTooShort is returned when a remember token is not at least 32 bytes
 	ErrRememberTooShort privateError = "models: remember token must be at least 32 bytes"
 	// ErrRememberRequired is returned when create or update is attempted without a remember token hash

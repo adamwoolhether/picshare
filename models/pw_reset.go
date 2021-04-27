@@ -19,7 +19,7 @@ type pwResetDB interface {
 	Delete(id uint) error
 }
 
-func newPwResetValidtory(pwrdb pwResetDB, hmac hash.HMAC) *pwResetValidator {
+func newPwResetValidtor(pwrdb pwResetDB, hmac hash.HMAC) *pwResetValidator {
 	return &pwResetValidator{
 		pwResetDB: pwrdb,
 		hmac:      hmac,
