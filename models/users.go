@@ -43,6 +43,8 @@ type UserService interface {
 	// If correct, the corresponding user will be returned.
 	// Otherwise, either ErrNotFound, ErrPasswordIncorrect, or another err.
 	Authenticate(email, password string) (*User, error)
+	InitiatePwRest(email string) (string, error)
+	CompletePwReset(token, newPw string) (*User, error)
 	UserDB
 }
 
@@ -150,7 +152,7 @@ func (uv *userValidator) Create(user *User) error {
 		uv.passwordMinLength,
 		uv.bcryptPassword,
 		uv.passwordHashRequired,
-		uv.defaultRemember,
+		uv.setDefaultRemember,
 		uv.rememberMinBytes,
 		uv.hmacRemember,
 		uv.rememberHashRequired,
@@ -210,7 +212,7 @@ func (uv *userValidator) bcryptPassword(user *User) error {
 	return nil
 }
 
-func (us *userValidator) defaultRemember(user *User) error {
+func (us *userValidator) setDefaultRemember(user *User) error {
 	if user.Remember != "" {
 		return nil
 	}
