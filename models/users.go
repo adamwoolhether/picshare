@@ -47,7 +47,7 @@ type UserService interface {
 	// InitiatePwReset starts process to reset the user's password by
 	// creating a reset token for the user of corresponding user ID
 	InitiatePwReset(userID uint) (string, error)
-	//CompletePwReset(token, newPw string) (*User, error)
+	CompletePwReset(token, newPw string) (*User, error)
 	UserDB
 }
 

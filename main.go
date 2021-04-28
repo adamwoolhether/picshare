@@ -53,6 +53,10 @@ func main() {
 	r.Handle("/login", usersC.LoginView).Methods("GET")
 	r.HandleFunc("/login", usersC.Login).Methods("POST")
 	r.HandleFunc("/logout", requireUserMW.ApplyFn(usersC.Logout)).Methods("POST")
+	r.Handle("/forgot", usersC.ForgotPwView).Methods("GET")
+	r.HandleFunc("/forgot", usersC.InitiatePwReset).Methods("POST")
+	r.HandleFunc("/reset", usersC.ResetPw).Methods("GET")
+	r.HandleFunc("/reset", usersC.CompleteReset).Methods("POST")
 
 	// Assets
 	assetHandler := http.FileServer(http.Dir("./assets"))
