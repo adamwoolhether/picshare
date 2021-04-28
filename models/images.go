@@ -11,7 +11,7 @@ import (
 
 type Image struct {
 	GalleryID uint
-	Filename string
+	Filename  string
 }
 
 //func (i *Image) String() string {	//this is a "conversion funtion"
@@ -74,8 +74,8 @@ func (is *imageService) ByGalleryID(galleryID uint) ([]Image, error) {
 	ret := make([]Image, len(imgStrings))
 	for i := range imgStrings {
 		imgStrings[i] = strings.Replace(imgStrings[i], path, "", 1)
-		ret[i] = Image {
-			Filename: imgStrings[i],
+		ret[i] = Image{
+			Filename:  imgStrings[i],
 			GalleryID: galleryID,
 		}
 	}

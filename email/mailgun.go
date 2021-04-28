@@ -12,9 +12,9 @@ import (
 
 const (
 	resetURL = "https://test.adamwoolhether/reset"
-	sender  = "adamwoolhether@gmail.com"
-	subject = "Welcome to PicApp"
-	body    = `Hey!
+	sender   = "adamwoolhether@gmail.com"
+	subject  = "Welcome to PicApp"
+	body     = `Hey!
 	Welcome to my site. This web app is a working project to play with my Go skills.
 
 	Feel free to create a gallery, upload photos, and share them with friends.

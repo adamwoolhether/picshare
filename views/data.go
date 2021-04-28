@@ -104,7 +104,7 @@ func getAlert(r *http.Request) *Alert {
 		return nil
 	}
 	alert := Alert{
-		Level: lvl.Value,
+		Level:   lvl.Value,
 		Message: msg.Value,
 	}
 	return &alert

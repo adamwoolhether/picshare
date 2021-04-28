@@ -6,8 +6,8 @@ import (
 
 type Gallery struct {
 	gorm.Model
-	UserID uint   `gorm:"not null;index"`
-	Title  string `gorm:"not null"`
+	UserID uint    `gorm:"not null;index"`
+	Title  string  `gorm:"not null"`
 	Images []Image `gorm:"-"`
 	// needs a slug
 }

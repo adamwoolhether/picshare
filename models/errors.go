@@ -21,8 +21,8 @@ const (
 	// ErrEmailTaken is returned when an update or create is attampted on an already in-use Email address
 	ErrEmailTaken modelError = "models: email address is already taken"
 	// ErrIDInvalid is returned when an invalid ID is provided to an verb method
-	ErrIDInvalid privateError = "models: provided ID is invalid"
-	ErrTitleRequired modelError = "models: title is required for galleries"
+	ErrIDInvalid     privateError = "models: provided ID is invalid"
+	ErrTitleRequired modelError   = "models: title is required for galleries"
 
 	ErrTokenInvalid modelError = "models: provided token is invalid"
 
@@ -30,14 +30,14 @@ const (
 	ErrRememberTooShort privateError = "models: remember token must be at least 32 bytes"
 	// ErrRememberRequired is returned when create or update is attempted without a remember token hash
 	ErrRememberRequired privateError = "models: remember token is required"
-	ErrUserIDRequired privateError = "models: user id is required for galleries"
+	ErrUserIDRequired   privateError = "models: user id is required for galleries"
 )
 
-func(e modelError) Error() string {
+func (e modelError) Error() string {
 	return string(e)
 }
 
-func(e modelError) Public() string {
+func (e modelError) Public() string {
 	s := strings.Replace(string(e), "models: ", "", 1)
 	split := strings.Split(s, " ")
 	split[0] = strings.Title(split[0])
@@ -46,6 +46,6 @@ func(e modelError) Public() string {
 
 type privateError string
 
-func(e privateError) Error() string {
+func (e privateError) Error() string {
 	return string(e)
 }

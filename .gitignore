@@ -64,6 +64,7 @@ builds/**/images/*
 picapp
 **/images/**
 
+runner.conf
 .config
 notes/**
 .vscode/**

@@ -49,7 +49,7 @@ func (g *Galleries) Index(w http.ResponseWriter, r *http.Request) {
 	user := context.User(r.Context())
 	galleries, err := g.gs.ByUserID(user.ID)
 	if err != nil {
-		log.Println(err )
+		log.Println(err)
 		http.Error(w, "Something went wrong", http.StatusInternalServerError)
 		return
 	}
@@ -205,7 +205,7 @@ func (g *Galleries) ImageDelete(w http.ResponseWriter, r *http.Request) {
 	}
 	filename := mux.Vars(r)["filename"]
 	i := models.Image{
-		Filename: filename,
+		Filename:  filename,
 		GalleryID: gallery.ID,
 	}
 	err = g.is.Delete(&i)

@@ -167,7 +167,6 @@ type ResetPwForm struct {
 
 // POST /forgot
 func (u *Users) InitiatePwReset(w http.ResponseWriter, r *http.Request) {
-	//TODO: Process forgot password form an init process
 	var vd views.Data
 	var form ResetPwForm
 	vd.Yield = &form
@@ -176,7 +175,7 @@ func (u *Users) InitiatePwReset(w http.ResponseWriter, r *http.Request) {
 		u.ForgotPwView.Render(w, r, vd)
 		return
 	}
-	user, _ := u.us.ByEmail(form.Email);
+	user, _ := u.us.ByEmail(form.Email)
 	token, err := u.us.InitiatePwReset(user.ID)
 	if err != nil {
 		vd.SetAlert(err)
@@ -192,7 +191,7 @@ func (u *Users) InitiatePwReset(w http.ResponseWriter, r *http.Request) {
 	}
 
 	views.RedirectAlert(w, r, "/reset", http.StatusFound, views.Alert{
-		Level: views.AlertLvlSuccess,
+		Level:   views.AlertLvlSuccess,
 		Message: "Instructions to reset your password have been emailed to you.",
 	})
 }
@@ -232,7 +231,7 @@ func (u *Users) CompleteReset(w http.ResponseWriter, r *http.Request) {
 	}
 	u.signIn(w, user)
 	views.RedirectAlert(w, r, "/galleries", http.StatusFound, views.Alert{
-		Level: views.AlertLvlSuccess,
+		Level:   views.AlertLvlSuccess,
 		Message: "Your password has been reset, and you're logged in!",
 	})
 }
