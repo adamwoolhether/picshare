@@ -28,7 +28,10 @@ func main() {
 		models.WithImage(),
 	)
 	must(err)
-	//services.DestructiveReset()
+	///*
+	//// WARNING: Uncommenting this will destroy database
+	////services.DestructiveReset()
+	//*/
 	services.AutoMigrate()
 
 	r := mux.NewRouter()
