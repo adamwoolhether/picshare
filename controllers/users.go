@@ -2,11 +2,11 @@ package controllers
 
 import (
 	"net/http"
-	"picapp/context"
-	"picapp/email"
-	"picapp/models"
-	"picapp/rand"
-	"picapp/views"
+	"picshare/context"
+	"picshare/email"
+	"picshare/models"
+	"picshare/rand"
+	"picshare/views"
 	"time"
 )
 

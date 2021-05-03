@@ -1,4 +1,4 @@
-module picapp
+module picshare
 
 go 1.15
 

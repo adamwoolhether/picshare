@@ -61,7 +61,7 @@ builds/**/images/*
 **/tmp/*
 
 # Don't include our binary
-picapp
+picshare
 **/images/**
 
 runner.conf

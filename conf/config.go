@@ -42,7 +42,7 @@ func DefaultPostgresConfig() PostgresConfig {
 		Port:     5432,
 		User:     "adam",
 		Password: "",
-		Name:     "picapp",
+		Name:     "picshare",
 	}
 }
 

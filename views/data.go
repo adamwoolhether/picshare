@@ -3,7 +3,7 @@ package views
 import (
 	"log"
 	"net/http"
-	"picapp/models"
+	"picshare/models"
 	"time"
 )
 

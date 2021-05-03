@@ -3,8 +3,8 @@ package models
 import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-	"picapp/hash"
-	"picapp/rand"
+	"picshare/hash"
+	"picshare/rand"
 	"regexp"
 	"strings"
 	"time"

@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"github.com/gorilla/csrf"
 	"net/http"
-	"picapp/conf"
-	"picapp/controllers"
-	"picapp/middleware"
-	"picapp/models"
-	"picapp/rand"
+	"picshare/conf"
+	"picshare/controllers"
+	"picshare/middleware"
+	"picshare/models"
+	"picshare/rand"
 
 	"github.com/gorilla/mux"
 )

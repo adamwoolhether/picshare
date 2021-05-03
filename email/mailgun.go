@@ -6,14 +6,14 @@ import (
 	"github.com/mailgun/mailgun-go/v4"
 	"log"
 	"net/url"
-	"picapp/conf"
+	"picshare/conf"
 	"time"
 )
 
 const (
-	resetURL = "https://test.adamwoolhether/reset"
+	resetURL = "https://adamwoolhether/reset"
 	sender   = "adamwoolhether@gmail.com"
-	subject  = "Welcome to PicApp"
+	subject  = "Welcome to picshare"
 	body     = `Hey!
 	Welcome to my site. This web app is a working project to play with my Go skills.
 
@@ -24,7 +24,7 @@ const (
 	- Adam`
 
 	htmlBody = `Hey!<br><br>
-	Welcome to my site, <a href ="test.adamwoolhether.com">PicApp</a>.<br><br>
+	Welcome to my site, <a href ="adamwoolhether.com">picshare</a>.<br><br>
 	This web app is a working project to play with my Go skills.<br><br>
 	Feel free to create a gallery, upload photos, and share them with friends.<br><br>
 	Please reach out if you have suggestions for improvement.<br><br>
@@ -79,7 +79,6 @@ func SignUpEmail(emailAddy string) {
 func ResetPw(emailAddy, token string) error {
 	cfg := conf.LoadConfig(true)
 	mg := mailgun.NewMailgun(cfg.Mailgun.Domain, cfg.Mailgun.APIKey)
-	//TODO: Build the reset URL
 	v := url.Values{}
 	v.Set("token", token)
 	resetURL := resetURL + "?" + v.Encode()

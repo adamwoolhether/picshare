@@ -1,6 +1,6 @@
 package controllers
 
-import "picapp/views"
+import "picshare/views"
 
 func NewStatic() *Static {
 	return &Static{

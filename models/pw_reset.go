@@ -2,8 +2,8 @@ package models
 
 import (
 	"gorm.io/gorm"
-	"picapp/hash"
-	"picapp/rand"
+	"picshare/hash"
+	"picshare/rand"
 )
 
 type pwReset struct {

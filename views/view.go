@@ -9,7 +9,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
-	"picapp/context"
+	"picshare/context"
 )
 
 // NOTE: If you use different directories for production,
@@ -87,7 +87,7 @@ func (v *View) Render(w http.ResponseWriter, r *http.Request, data interface{}) 
 }
 
 // layoutFiles returns a slice of strings representing
-// all layout files used in PicApp
+// all layout files used in picshare
 func layoutFiles() []string {
 	files, err := filepath.Glob(LayoutDir + "*" + TemplateExt)
 	if err != nil {

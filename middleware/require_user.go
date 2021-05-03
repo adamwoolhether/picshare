@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"net/http"
-	"picapp/context"
-	"picapp/models"
+	"picshare/context"
+	"picshare/models"
 	"strings"
 )
 

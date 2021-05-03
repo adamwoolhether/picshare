@@ -5,9 +5,9 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"picapp/context"
-	"picapp/models"
-	"picapp/views"
+	"picshare/context"
+	"picshare/models"
+	"picshare/views"
 	"strconv"
 )
 
