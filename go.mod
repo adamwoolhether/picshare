@@ -9,7 +9,8 @@ require (
 	github.com/lib/pq v1.9.0 // indirect
 	github.com/mailgun/mailgun-go/v4 v4.5.1
 	golang.org/x/crypto v0.0.0-20210218145215-b8e89b74b9df
-	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7
+	golang.org/x/net v0.0.0-20200822124328-c89045814202
+	golang.org/x/oauth2 v0.0.0-20210427180440-81ed05c6b58c
 	gorm.io/driver/postgres v1.0.8
 	gorm.io/gorm v1.20.12
 )

@@ -21,12 +21,20 @@ type Config struct {
 	HMACKey  string         `json:"hmac_key"`
 	Database PostgresConfig `json:"database"`
 	Mailgun  MailgunConfig  `json:"mailgun"`
+	DropBox  OAuthConfig    `json:"dropbox"`
 }
 
 type MailgunConfig struct {
 	APIKey       string `json:"api_key"`
 	PublicAPIKey string `json:"public_api_key"`
 	Domain       string `json:"domain"`
+}
+
+type OAuthConfig struct {
+	ID       string `json:"id"`
+	Secret   string `json:"secret"`
+	AuthURL  string `json:"auth_url"`
+	TokenURL string `json:"token_url"`
 }
 
 func (c PostgresConfig) PsqlConnInfo() string {
