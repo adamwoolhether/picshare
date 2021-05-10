@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"github.com/gorilla/csrf"
@@ -11,6 +12,7 @@ import (
 	"picshare/middleware"
 	"picshare/models"
 	"picshare/rand"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -63,13 +65,37 @@ func main() {
 
 	dbxRedirect := func(w http.ResponseWriter, r *http.Request) {
 		state := csrf.Token(r)
+		cookie := http.Cookie{
+			Name: "oauth_state",
+			Value: state,
+			HttpOnly: true,
+			//Expires: time.Now().Local().Add(time.Minute * time.Duration(5)),
+		}
+		http.SetCookie(w, &cookie)
 		url := dbxOAuth.AuthCodeURL(state)
-		fmt.Println(state)
 		http.Redirect(w, r, url, http.StatusFound)
 	}
 	r.HandleFunc("/oauth/dropbox/connect", dbxRedirect)
 	dbxCallback := func(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
+		state := r.FormValue("state")
+		cookie, err := r.Cookie("oauth_state")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		} else if cookie == nil || cookie.Value != state {
+			http.Error(w, "Invalid state provided", http.StatusBadRequest)
+			return
+		}
+		cookie.Value = ""
+		cookie.Expires = time.Now()
+		http.SetCookie(w, cookie)
+		code := r.FormValue("code")
+		token, err := dbxOAuth.Exchange(context.TODO(), code)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+		fmt.Fprintf(w, "%+v", token)
 		fmt.Fprintln(w, "code: ", r.FormValue("code"), "\nstate: ", r.FormValue("state"))
 	}
 	r.HandleFunc("/oauth/dropbox/callback", dbxCallback)
