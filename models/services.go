@@ -48,6 +48,13 @@ func WithImage() ServicesConfig {
 	}
 }
 
+func WithOAuth() ServicesConfig {
+	return func(s *Services) error {
+		s.OAuth = NewOAuthService(s.db)
+		return nil
+	}
+}
+
 func NewServices(cfgs ...ServicesConfig) (*Services, error) {
 	var s Services
 	for _, cfg := range cfgs {
@@ -62,6 +69,7 @@ type Services struct {
 	Gallery GalleryService
 	User    UserService
 	Image   ImageService
+	OAuth   OAuthService
 	db      *gorm.DB
 }
 
@@ -73,7 +81,7 @@ func (us *UserService) Close() error {
 
 // DestructiveReset drops all tables and rebuilds them.
 func (s *Services) DestructiveReset() error {
-	err := s.db.Migrator().DropTable(&User{}, &Gallery{}, &pwReset{})
+	err := s.db.Migrator().DropTable(&User{}, &Gallery{}, &OAuth{}, &pwReset{})
 	if err != nil {
 		return err
 	}
@@ -83,7 +91,7 @@ func (s *Services) DestructiveReset() error {
 
 // AutoMigrate attempts to automatically migrate the all tables.
 func (s *Services) AutoMigrate() error {
-	err := s.db.AutoMigrate(&User{}, &Gallery{}, &pwReset{})
+	err := s.db.AutoMigrate(&User{}, &Gallery{}, &OAuth{}, &pwReset{})
 	if err != nil {
 		return err
 	}

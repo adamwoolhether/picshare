@@ -31,6 +31,7 @@ const (
 	// ErrRememberRequired is returned when create or update is attempted without a remember token hash
 	ErrRememberRequired privateError = "models: remember token is required"
 	ErrUserIDRequired   privateError = "models: user id is required for galleries"
+	ErrServiceRequired  privateError = "models: service is required"
 )
 
 func (e modelError) Error() string {

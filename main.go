@@ -30,6 +30,7 @@ func main() {
 		models.WithUser(cfg.Pepper, cfg.HMACKey),
 		models.WithGallery(),
 		models.WithImage(),
+		models.WithOAuth(),
 	)
 	must(err)
 	///*
@@ -37,6 +38,13 @@ func main() {
 	////services.DestructiveReset()
 	//*/
 	services.AutoMigrate()
+
+	_, err = services.OAuth.Find(1, "dropbox");
+	if err == nil {
+		panic("expected ErrNotFound")
+	}else {
+		fmt.Println("No OAuth tokens found")
+	}
 
 	r := mux.NewRouter()
 	staticC := controllers.NewStatic()
