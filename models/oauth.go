@@ -5,11 +5,15 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	OAuthDropbox = "OAuthDropbox"
+)
+
 type OAuth struct {
 	gorm.Model
 	UserID  uint   `gorm:"not null;uniqueIndex:user_id_service"`
-	Service string `gorm:"not null:uniqueIndex:user_id_service"`
 	oauth2.Token
+	Service string `gorm:"not null:uniqueIndex:user_id_service"`
 }
 
 func NewOAuthService(db *gorm.DB) OAuthService {

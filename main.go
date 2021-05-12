@@ -8,6 +8,7 @@ import (
 	"golang.org/x/oauth2"
 	"net/http"
 	"picshare/conf"
+	llctx "picshare/context"
 	"picshare/controllers"
 	"picshare/middleware"
 	"picshare/models"
@@ -23,7 +24,6 @@ func main() {
 	flag.Parse()
 
 	cfg := conf.LoadConfig(*boolPtr)
-	fmt.Println(cfg.DropBox)
 	dbConf := cfg.Database
 	services, err := models.NewServices(
 		models.WithGorm(dbConf.PsqlConnInfo(), !cfg.IsProd()),
@@ -38,13 +38,6 @@ func main() {
 	////services.DestructiveReset()
 	//*/
 	services.AutoMigrate()
-
-	_, err = services.OAuth.Find(1, "dropbox");
-	if err == nil {
-		panic("expected ErrNotFound")
-	}else {
-		fmt.Println("No OAuth tokens found")
-	}
 
 	r := mux.NewRouter()
 	staticC := controllers.NewStatic()
@@ -83,7 +76,7 @@ func main() {
 		url := dbxOAuth.AuthCodeURL(state)
 		http.Redirect(w, r, url, http.StatusFound)
 	}
-	r.HandleFunc("/oauth/dropbox/connect", dbxRedirect)
+	r.HandleFunc("/oauth/dropbox/connect", requireUserMW.ApplyFn(dbxRedirect))
 	dbxCallback := func(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		state := r.FormValue("state")
@@ -103,10 +96,29 @@ func main() {
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
+		user := llctx.User(r.Context())
+		oldToken, err := services.OAuth.Find(user.ID, models.OAuthDropbox)
+		if err == models.ErrNotFound {
+			//noop
+		} else if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		} else {
+			services.OAuth.Delete(oldToken.ID)
+		}
+		userOAuth := models.OAuth{
+			UserID: user.ID,
+			Token: *token,
+			Service: models.OAuthDropbox,
+		}
+		err = services.OAuth.Create(&userOAuth)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		fmt.Fprintf(w, "%+v", token)
-		fmt.Fprintln(w, "code: ", r.FormValue("code"), "\nstate: ", r.FormValue("state"))
+		//fmt.Fprintln(w, "code: ", r.FormValue("code"), "\nstate: ", r.FormValue("state"))
 	}
-	r.HandleFunc("/oauth/dropbox/callback", dbxCallback)
+	r.HandleFunc("/oauth/dropbox/callback", requireUserMW.ApplyFn(dbxCallback))
 
 	r.Handle("/", staticC.Home).Methods("GET")
 	r.Handle("/contact", staticC.Contact).Methods("GET")
