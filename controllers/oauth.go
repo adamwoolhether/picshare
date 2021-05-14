@@ -3,13 +3,12 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/dropbox/dropbox-sdk-go-unofficial/v6/dropbox"
-	"github.com/dropbox/dropbox-sdk-go-unofficial/v6/dropbox/files"
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 	"golang.org/x/oauth2"
 	"net/http"
 	llctx "picshare/context"
+	"picshare/dbx"
 	"picshare/models"
 	"time"
 )
@@ -111,24 +110,11 @@ func (o *OAuth) DropboxTest(w http.ResponseWriter, r *http.Request) {
 	}
 	token := userOAuth.Token
 
-	config := dropbox.Config{
-		Token:    token.AccessToken,
-		LogLevel: dropbox.LogInfo,
-	}
-	dbx := files.New(config)
-	res, err := dbx.ListFolder(&files.ListFolderArg{
-		Path: path,
-	})
+	folders, files, err := dbx.List(token.AccessToken, path)
 	if err != nil {
 		panic(err)
 	}
-	for _, entry := range res.Entries {
-		switch meta := entry.(type) {
-		case *files.FolderMetadata:
-			fmt.Fprintln(w, "FolderMetadata=", meta)
-		case *files.FileMetadata:
-			fmt.Fprintln(w, "FileMetadata=", meta)
+	fmt.Fprintln(w, "Folders=", folders)
+	fmt.Fprintln(w, "Files=", files)
 
-		}
-	}
 }
