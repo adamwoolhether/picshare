@@ -6,14 +6,14 @@ import (
 )
 
 const (
-	OAuthDropbox = "OAuthDropbox"
+	OAuthDropbox = "dropbox"
 )
 
 type OAuth struct {
 	gorm.Model
 	UserID  uint   `gorm:"not null;uniqueIndex:user_id_service"`
-	oauth2.Token
 	Service string `gorm:"not null:uniqueIndex:user_id_service"`
+	oauth2.Token
 }
 
 func NewOAuthService(db *gorm.DB) OAuthService {

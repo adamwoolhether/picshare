@@ -40,7 +40,8 @@ func main() {
 	usersC := controllers.NewUsers(services.User)
 	galleriesC := controllers.NewGalleries(services.Gallery, services.Image, r)
 
-	dbxOAuth := &oauth2.Config{
+	oauthConfigs := make(map[string]*oauth2.Config)
+	oauthConfigs[models.OAuthDropbox] = &oauth2.Config{
 		ClientID:     cfg.DropBox.ID,
 		ClientSecret: cfg.DropBox.Secret,
 		Endpoint: oauth2.Endpoint{
@@ -49,7 +50,7 @@ func main() {
 		},
 		RedirectURL: "http://localhost:3000/oauth/dropbox/callback",
 	}
-	oauthC := controllers.NewOAuth(services.OAuth, dbxOAuth)
+	oauthC := controllers.NewOAuth(services.OAuth, oauthConfigs)
 
 	b, err := rand.Bytes(32)
 	must(err)
@@ -60,8 +61,6 @@ func main() {
 	requireUserMW := middleware.RequireUser{
 		User: userMW,
 	}
-
-
 
 	r.Handle("/", staticC.Home).Methods("GET")
 	r.Handle("/contact", staticC.Contact).Methods("GET")
@@ -95,9 +94,9 @@ func main() {
 	r.HandleFunc("/galleries/{id:[0-9]+}", galleriesC.Show).Methods("GET").Name(controllers.ShowGalleryName)
 
 	// OAuth
-	r.HandleFunc("/oauth/dropbox/connect", requireUserMW.ApplyFn(oauthC.DropboxConnect))
-	r.HandleFunc("/oauth/dropbox/callback", requireUserMW.ApplyFn(oauthC.DropboxCallback))
-	r.HandleFunc("/oauth/dropbox/test", requireUserMW.ApplyFn(oauthC.DropboxTest))
+	r.HandleFunc("/oauth/{service:[a-z]+}/connect", requireUserMW.ApplyFn(oauthC.Connect))
+	r.HandleFunc("/oauth/{service:[a-z]+}/callback", requireUserMW.ApplyFn(oauthC.Callback))
+	r.HandleFunc("/oauth/{service:[a-z]+}/test", requireUserMW.ApplyFn(oauthC.DropboxTest))
 
 	fmt.Printf("Starting the server on :%d...\n", cfg.Port)
 	http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), CSRF(userMW.Apply(r)))
