@@ -93,7 +93,8 @@ func (o *OAuth) Callback(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintf(w, "%+v", token)
+	//fmt.Fprintf(w, "%+v", token)
+	http.Redirect(w, r, "/galleries", http.StatusFound)
 }
 
 func (o *OAuth) DropboxTest(w http.ResponseWriter, r *http.Request) {

@@ -48,7 +48,7 @@ func main() {
 			AuthURL:  cfg.DropBox.AuthURL,
 			TokenURL: cfg.DropBox.TokenURL,
 		},
-		RedirectURL: "http://localhost:3000/oauth/dropbox/callback",
+		RedirectURL: cfg.DropBox.RedirectURL,
 	}
 	oauthC := controllers.NewOAuth(services.OAuth, oauthConfigs)
 
