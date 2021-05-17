@@ -26,7 +26,7 @@ var (
 func NewView(layout string, files ...string) *View {
 	addTemplatePath(files)
 	addTemplateExt(files)
-	files = append(files, layoutFiles()...)
+	files = append(layoutFiles(), files...)
 
 	t, err := template.New("").Funcs(template.FuncMap{
 		"csrfField": func() (template.HTML, error) {
