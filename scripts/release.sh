@@ -15,8 +15,6 @@ echo "  Existing code deleted successfully!"
 
 echo "  Uploading local code..."
 
-# The \ at the end of the line tells bash that our
-# command isn't done and wraps to the next line.
 ssh root@www.adamwoolhether.com "mkdir -p /root/go/src/picshare/ && mkdir -p /root/app/"
 rsync -avr --exclude-from='./scripts/exclude.txt' ./ \
   root@www.adamwoolhether.com:/root/go/src/picshare/
@@ -36,22 +34,6 @@ RestartSec=30
 [Install]
 WantedBy=multi-user.target
 EOF'"
-
-#echo "  Go getting deps..."
-#ssh root@www.adamwoolhether.com "export GOPATH=/root/go; \
-#  /usr/local/go/bin/go get golang.org/x/crypto/bcrypt"
-#ssh root@www.adamwoolhether.com "export GOPATH=/root/go; \
-#  /usr/local/go/bin/go get github.com/gorilla/mux"
-#ssh root@www.adamwoolhether.com "export GOPATH=/root/go; \
-#  /usr/local/go/bin/go get github.com/gorilla/schema"
-#ssh root@www.adamwoolhether.com "export GOPATH=/root/go; \
-#  /usr/local/go/bin/go get github.com/lib/pq"
-#ssh root@www.adamwoolhether.com "export GOPATH=/root/go; \
-#  /usr/local/go/bin/go get github.com/jinzhu/gorm"
-#ssh root@www.adamwoolhether.com "export GOPATH=/root/go; \
-#  /usr/local/go/bin/go get github.com/gorilla/csrf"
-#ssh root@www.adamwoolhether.com "export GOPATH=/root/go; \
-#  /usr/local/go/bin/go get gopkg.in/mailgun/mailgun-go.v1"
 
 echo "  Building the code on remote server..."
 ssh root@www.adamwoolhether.com 'export GOPATH=/root/go; \
@@ -78,10 +60,6 @@ echo "  Caddyfile moved successfully!"
 echo "  Moving .config file..."
 ssh root@www.adamwoolhether.com "cp /root/go/src/picshare/prodconfig.config /root/app/.config"
 echo "  Caddyfile .config successfully!"
-
-#echo "  Copying the binary..."
-#ssh root@www.adamwoolhether.com "cp server /root/app"
-#echo "  Binary copied successfully!"
 
 echo "  Restarting Caddy server..."
 ssh root@www.adamwoolhether.com "sudo systemctl restart caddy"
