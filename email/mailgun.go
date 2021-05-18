@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	resetURL = "https://adamwoolhether/reset"
+	resetURL = "https://www.adamwoolhether.com/reset"
 	sender   = "adamwoolhether@gmail.com"
 	subject  = "Welcome to picshare"
 	body     = `Hey!
@@ -24,7 +24,7 @@ const (
 	- Adam`
 
 	htmlBody = `Hey!<br><br>
-	Welcome to my site, <a href ="adamwoolhether.com">picshare</a>.<br><br>
+	Welcome to my site, <a href ="www.adamwoolhether.com">picshare</a>!<br><br>
 	This web app is a working project to play with my Go skills.<br><br>
 	Feel free to create a gallery, upload photos, and share them with friends.<br><br>
 	Please reach out if you have suggestions for improvement.<br><br>

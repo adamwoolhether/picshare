@@ -51,6 +51,7 @@ builds/**/images/*
 *.mp4
 #*.png
 #*.jpeg
+runner.conf
 
 # security / ssl
 *.pem
