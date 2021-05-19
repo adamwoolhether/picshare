@@ -66,11 +66,12 @@ func (g *Galleries) Show(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	user := context.User(r.Context())
-	if gallery.UserID != user.ID {
-		http.Error(w, "Gallery not found", http.StatusNotFound)
-		return
-	}
+	//TODO: MAKE THIS A BOOLEAN OPTION
+	//user := context.User(r.Context())
+	//if gallery.UserID != user.ID {
+	//	http.Error(w, "Gallery not found", http.StatusNotFound)
+	//	return
+	//}
 	var vd views.Data
 	vd.Yield = gallery
 	g.ShowView.Render(w, r, vd)
