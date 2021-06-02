@@ -2,12 +2,12 @@
 
 A photosharing application written in go.
 
-###Why did I make this?
+### Why did I make this?
 To serve as proof of concept demonstrating my ability to create web applications with the [Go programming language](https://www.golang.org/).   
 I may keep adding new features as I learn new tricks  
 Go ahead and click [Sign Up](https://www.adamwoolhether.com/signup) on the top right and start uploading pictures!
 
-###What is this?
+### What is this?
 🧐 This is back end development project.  
 📸 Picture sharing web app written 💯 in the [Go programming language](https://www.golang.org/).  
 📤 [Dropbox](https://www.dropbox.com/home) integration via persistent OAuth tokens.  
@@ -21,7 +21,7 @@ Go ahead and click [Sign Up](https://www.adamwoolhether.com/signup) on the top r
 ❓ Reset password functionality.  
 📧 Sign Up email and password reset implemented with [Mailgun-Go](https://github.com/mailgun/mailgun-go) (You may have to check your junkmail folder, as my domain is not widely recognized).
 
-###How did you make this site?
+### How did you make this site?
 I made this with the [GoLand IDE](https://www.jetbrains.com/go/) developed by Jet Brains.
 Many many thanks to [Jon Calhoun](https://www.calhoun.io/)!
 
